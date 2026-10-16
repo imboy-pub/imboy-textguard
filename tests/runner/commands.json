@@ -268,6 +268,17 @@
    "acceptance": ["AC-013", "AC-024", "AC-025", "AC-026", "AC-027", "AC-028", "AC-029", "AC-030", "AC-031"],
    "scope": "Literal/alias component: Standard overlapping, budgets and 10k seeded literal/alias projection; gap and full-pipeline AC-013 remain T09/T11."
   },
+  "t08-matcher-unit": {
+   "argv": ["cargo", "test", "--locked", "--lib", "matcher::", "--", "--skip", "matcher::regex::"],
+   "discovery_argv": ["cargo", "test", "--locked", "--lib", "matcher::", "--", "--skip", "matcher::regex::", "--list"],
+   "cwd": ".",
+   "environment_allowlist": ["PATH", "LANG", "LC_ALL", "TZ", "TMPDIR", "HOME", "RUSTUP_HOME", "CARGO_HOME", "CARGO_TARGET_DIR"],
+   "timeout_seconds": 900,
+   "count_format": "rust",
+   "expected_exit": 0,
+   "acceptance": ["AC-024", "AC-027", "AC-031"],
+   "scope": "T08 library aggregation and two literal expansion-budget checks; regex has its own task selector."
+  },
   "t10-regex": {
    "argv": ["cargo", "test", "--locked", "--test", "regex_contract"],
    "discovery_argv": ["cargo", "test", "--locked", "--test", "regex_contract", "--", "--list"],

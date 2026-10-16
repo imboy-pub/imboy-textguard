@@ -2,8 +2,9 @@
 
 Run `cargo test --locked --offline --test matcher -- --nocapture` with an isolated
 `CARGO_TARGET_DIR`. Discovery uses the same command with `-- --list`. The driver
-imports the owned matcher source directly, so these tests do not depend on the
-coordinator adding `pub mod matcher;` to the shared `src/lib.rs` first.
+uses the exported library matcher (25 tests). T08 also registers the library
+aggregation and two expansion-budget checks (3 tests), selected with
+`cargo test --locked --lib matcher:: -- --skip matcher::regex::`.
 
 The differential test reads the frozen T05 corpus, verifies its manifest SHA256
 and seed 20261016, and compares all 10,000 cases against the actual matcher. It

@@ -2,6 +2,7 @@
 
 pub mod alias;
 pub mod literal;
+pub mod regex;
 
 use crate::model::ErrorCode;
 use crate::model::{MatchMethod, RuleAction};

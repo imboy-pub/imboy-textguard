@@ -1,6 +1,5 @@
 pub use imboy_textguard::model;
-#[path = "../src/runtime/mod.rs"]
-mod runtime;
+use imboy_textguard::runtime;
 
 use model::ErrorCode;
 use runtime::{Admission, Transport, WAITING, WORKERS};
