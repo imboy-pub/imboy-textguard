@@ -1,6 +1,8 @@
+pub mod engine;
 pub mod matcher;
 pub mod model;
 pub mod normalize;
+pub mod policy;
 pub mod runtime;
 
 pub mod protocol {
