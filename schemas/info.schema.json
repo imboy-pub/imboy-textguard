@@ -1,0 +1,98 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "instance_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "ready": {
+      "type": "boolean"
+    },
+    "build_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "ruleset_revision": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "generation": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)$"
+    },
+    "normalization_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "t2s_table_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "base_rules_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "canonical_count": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 50000
+    },
+    "alias_count": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000
+    },
+    "regex_count": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 32
+    },
+    "supported_semantics": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "compat-v1",
+          "enhanced-v1"
+        ]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "instance_id",
+    "ready",
+    "build_id",
+    "supported_semantics"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "ready": {
+            "const": true
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "ruleset_revision",
+          "generation",
+          "normalization_id",
+          "t2s_table_id",
+          "base_rules_digest",
+          "canonical_count",
+          "alias_count",
+          "regex_count"
+        ]
+      }
+    }
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:imboy:textguard:v1:info"
+}

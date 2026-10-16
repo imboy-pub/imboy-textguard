@@ -1,0 +1,318 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "normalization_id": {
+      "const": "imboy-base-v1"
+    },
+    "t2s_table_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "limit_profile_id": {
+      "const": "mvp-default-v1"
+    },
+    "semantics_by_scene": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "channel_message": {
+          "enum": [
+            "compat-v1",
+            "enhanced-v1"
+          ]
+        },
+        "moment_post": {
+          "enum": [
+            "compat-v1",
+            "enhanced-v1"
+          ]
+        },
+        "profile_field": {
+          "enum": [
+            "compat-v1",
+            "enhanced-v1"
+          ]
+        }
+      },
+      "required": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ]
+    },
+    "allow_empty": {
+      "type": "boolean"
+    },
+    "literals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,19}$"
+          },
+          "word": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "category": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "severity": {
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "scenes": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "channel_message",
+                "moment_post",
+                "profile_field"
+              ]
+            },
+            "minItems": 1,
+            "maxItems": 3,
+            "uniqueItems": true
+          },
+          "aliases": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "variant_id": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9._-]{1,64}$"
+                },
+                "type": {
+                  "enum": [
+                    "pinyin",
+                    "homophone",
+                    "lookalike",
+                    "decomposed"
+                  ]
+                },
+                "pattern": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64
+                },
+                "action": {
+                  "enum": [
+                    "review",
+                    "block"
+                  ]
+                },
+                "boundary": {
+                  "enum": [
+                    "ascii_word",
+                    "none"
+                  ]
+                }
+              },
+              "required": [
+                "variant_id",
+                "type",
+                "pattern",
+                "action",
+                "boundary"
+              ]
+            },
+            "minItems": 0,
+            "maxItems": 8
+          },
+          "gap": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "enabled": {
+                "type": "boolean"
+              },
+              "action": {
+                "enum": [
+                  "review",
+                  "block"
+                ]
+              }
+            },
+            "required": [
+              "enabled",
+              "action"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "word",
+          "category",
+          "severity",
+          "scenes",
+          "aliases",
+          "gap"
+        ]
+      },
+      "minItems": 0,
+      "maxItems": 50000
+    },
+    "regex_rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^re:[A-Za-z0-9._-]{1,60}$"
+          },
+          "expression": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          },
+          "display_word": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "category": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "severity": {
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "action": {
+            "enum": [
+              "review",
+              "block"
+            ]
+          },
+          "scenes": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "channel_message",
+                "moment_post",
+                "profile_field"
+              ]
+            },
+            "minItems": 1,
+            "maxItems": 3,
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "id",
+          "expression",
+          "display_word",
+          "category",
+          "severity",
+          "action",
+          "scenes"
+        ]
+      },
+      "minItems": 0,
+      "maxItems": 32
+    },
+    "exceptions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._-]{1,64}$"
+          },
+          "phrase": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "scenes": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "channel_message",
+                "moment_post",
+                "profile_field"
+              ]
+            },
+            "minItems": 1,
+            "maxItems": 3,
+            "uniqueItems": true
+          },
+          "rule_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "variant_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9._-]{1,64}$"
+            },
+            "minItems": 1,
+            "maxItems": 32,
+            "uniqueItems": true
+          },
+          "views": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "B",
+                "T"
+              ]
+            },
+            "minItems": 1,
+            "maxItems": 2,
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "id",
+          "phrase",
+          "scenes",
+          "rule_id",
+          "variant_ids",
+          "views"
+        ]
+      },
+      "minItems": 0,
+      "maxItems": 1000
+    }
+  },
+  "required": [
+    "schema_version",
+    "normalization_id",
+    "t2s_table_id",
+    "limit_profile_id",
+    "semantics_by_scene",
+    "allow_empty",
+    "literals",
+    "regex_rules",
+    "exceptions"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:imboy:textguard:v1:ruleset"
+}

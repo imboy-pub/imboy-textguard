@@ -1,0 +1,47 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "request_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,64}$"
+    },
+    "scene": {
+      "enum": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ]
+    },
+    "fields": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "field_id": {
+            "type": "string",
+            "pattern": "^[ -~]{1,64}$"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 16384
+          }
+        },
+        "required": [
+          "field_id",
+          "text"
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 8
+    }
+  },
+  "required": [
+    "request_id",
+    "scene",
+    "fields"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:imboy:textguard:v1:check-request"
+}

@@ -1,0 +1,68 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "instance_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "ready": {
+      "type": "boolean"
+    },
+    "generation": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)$"
+    },
+    "ruleset_revision": {
+      "type": "string",
+      "pattern": "^([0-9a-f]{64})?$"
+    },
+    "state_etag": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "status": {
+      "enum": [
+        "uninitialized",
+        "active",
+        "committed",
+        "already_active"
+      ]
+    },
+    "scene_counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "channel_message": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "moment_post": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "profile_field": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ]
+    }
+  },
+  "required": [
+    "instance_id",
+    "ready",
+    "generation",
+    "ruleset_revision",
+    "state_etag",
+    "status",
+    "scene_counts"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:imboy:textguard:v1:publication-state"
+}
