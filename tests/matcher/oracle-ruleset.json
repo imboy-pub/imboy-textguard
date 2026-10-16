@@ -1,0 +1,156 @@
+{
+  "schema_version": 1,
+  "normalization_id": "imboy-base-v1",
+  "t2s_table_id": "test-t2s-v1",
+  "limit_profile_id": "mvp-default-v1",
+  "semantics_by_scene": {
+    "channel_message": "enhanced-v1",
+    "moment_post": "enhanced-v1",
+    "profile_field": "compat-v1"
+  },
+  "allow_empty": false,
+  "literals": [
+    {
+      "id": "1001",
+      "word": "测试词",
+      "category": "test",
+      "severity": "high",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [
+        {
+          "variant_id": "pinyin-01",
+          "type": "pinyin",
+          "pattern": "ceshici",
+          "action": "review",
+          "boundary": "ascii_word"
+        }
+      ],
+      "gap": {
+        "enabled": true,
+        "action": "review"
+      }
+    },
+    {
+      "id": "1002",
+      "word": "森林",
+      "category": "test",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [
+        {
+          "variant_id": "decomp-01",
+          "type": "decomposed",
+          "pattern": "森木木",
+          "action": "review",
+          "boundary": "none"
+        }
+      ],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "1003",
+      "word": "测",
+      "category": "test",
+      "severity": "low",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "1004",
+      "word": "测试",
+      "category": "test",
+      "severity": "low",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "1005",
+      "word": "词",
+      "category": "test",
+      "severity": "low",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "1006",
+      "word": "测试词条",
+      "category": "test",
+      "severity": "high",
+      "scenes": [
+        "channel_message",
+        "moment_post"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": true,
+        "action": "review"
+      }
+    },
+    {
+      "id": "1007",
+      "word": "abc",
+      "category": "test",
+      "severity": "low",
+      "scenes": [
+        "channel_message",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "1008",
+      "word": "hello",
+      "category": "test",
+      "severity": "low",
+      "scenes": [
+        "moment_post"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    }
+  ],
+  "regex_rules": [],
+  "exceptions": []
+}

@@ -38,6 +38,10 @@
         "AC-019"
       ]
     },
+    "T08": {
+      "commands": ["t08-matcher"],
+      "acceptance": ["AC-013", "AC-024", "AC-025", "AC-026", "AC-027", "AC-028", "AC-029", "AC-030", "AC-031"]
+    },
     "T07": {
       "commands": [
         "t07-t2s",
