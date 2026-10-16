@@ -1,0 +1,138 @@
+{
+ "schema_version": 1,
+ "commands": {
+  "runner-selftest": {
+   "argv": [
+    "python3",
+    "-B",
+    "tests/runner/selftest.py"
+   ],
+   "discovery_argv": [
+    "python3",
+    "-B",
+    "tests/runner/selftest.py",
+    "--list"
+   ],
+   "cwd": ".",
+   "environment_allowlist": [
+    "PATH",
+    "LANG",
+    "LC_ALL",
+    "TZ",
+    "TMPDIR"
+   ],
+   "timeout_seconds": 60,
+   "count_format": "unittest",
+   "expected_exit": 0,
+   "acceptance": [
+    "AC-010",
+    "AC-114"
+   ],
+   "scope": "Synthetic runner and temporary checkpoint sandbox only"
+  },
+  "control-selftest": {
+   "argv": [
+    "python3",
+    "-B",
+    "tests/runner/selftest.py",
+    "--control"
+   ],
+   "discovery_argv": [
+    "python3",
+    "-B",
+    "tests/runner/selftest.py",
+    "--control",
+    "--list"
+   ],
+   "cwd": ".",
+   "environment_allowlist": [
+    "PATH",
+    "LANG",
+    "LC_ALL",
+    "TZ",
+    "TMPDIR",
+    "TEXTGUARD_CONTROL_TOOLS"
+   ],
+   "required_environment": [
+    "TEXTGUARD_CONTROL_TOOLS"
+   ],
+   "blocked_exit_codes": [
+    2
+   ],
+   "timeout_seconds": 60,
+   "count_format": "unittest",
+   "expected_exit": 0,
+   "acceptance": [
+    "AC-114"
+   ],
+   "scope": "Explicit external control helper parity and temporary recovery sandbox; never writes live state"
+  },
+  "t04-build-contract": {
+   "argv": [
+    "python3",
+    "-B",
+    "tests/build_contract.py"
+   ],
+   "discovery_argv": [
+    "python3",
+    "-B",
+    "tests/build_contract.py",
+    "--list"
+   ],
+   "cwd": ".",
+   "environment_allowlist": [
+    "PATH",
+    "LANG",
+    "LC_ALL",
+    "TZ",
+    "TMPDIR",
+    "HOME",
+    "RUSTUP_HOME",
+    "CARGO_HOME",
+    "CARGO_TARGET_DIR"
+   ],
+   "timeout_seconds": 900,
+   "count_format": "unittest",
+   "expected_exit": 0,
+   "acceptance": [
+    "AC-009"
+   ],
+   "scope": "Frozen toolchain build gate: fmt, clippy, locked release build, registry resolution and product-root independence",
+   "blocked_exit_codes": [
+    2
+   ]
+  },
+  "t04-migration": {
+   "argv": [
+    "python3",
+    "-B",
+    "tests/migration/migration_assertion.py"
+   ],
+   "discovery_argv": [
+    "python3",
+    "-B",
+    "tests/migration/migration_assertion.py",
+    "--list"
+   ],
+   "cwd": ".",
+   "environment_allowlist": [
+    "PATH",
+    "LANG",
+    "LC_ALL",
+    "TZ",
+    "TMPDIR",
+    "TEXTGUARD_FORK_ROOT"
+   ],
+   "required_environment": [
+    "TEXTGUARD_FORK_ROOT"
+   ],
+   "timeout_seconds": 60,
+   "count_format": "unittest",
+   "expected_exit": 0,
+   "acceptance": [
+    "AC-113"
+   ],
+   "scope": "Reproducible proof that no prior TextGuard implementation exists inside the aho-corasick fork"
+  }
+ }
+}
