@@ -1,0 +1,178 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "request_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,64}$"
+    },
+    "ruleset_revision": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "generation": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)$"
+    },
+    "normalization_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "t2s_table_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "semantics_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "base_rules_digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "decision": {
+      "enum": [
+        "allow",
+        "review",
+        "block"
+      ]
+    },
+    "scan_complete": {
+      "const": true
+    },
+    "hits_truncated": {
+      "type": "boolean"
+    },
+    "hits": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "field_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "rule_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "variant_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "variant_type": {
+            "enum": [
+              "canonical",
+              "pinyin",
+              "homophone",
+              "lookalike",
+              "decomposed",
+              "regex_rule"
+            ]
+          },
+          "word": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "category": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64
+          },
+          "severity": {
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "effective_action": {
+            "enum": [
+              "review",
+              "block"
+            ]
+          },
+          "start_byte": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 16384
+          },
+          "end_byte": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 16384
+          },
+          "match_methods": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "literal",
+                "t2s",
+                "gap",
+                "alias",
+                "regex"
+              ]
+            },
+            "minItems": 1,
+            "maxItems": 3,
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "field_id",
+          "rule_id",
+          "variant_id",
+          "variant_type",
+          "word",
+          "category",
+          "severity",
+          "effective_action",
+          "start_byte",
+          "end_byte",
+          "match_methods"
+        ]
+      },
+      "minItems": 0,
+      "maxItems": 100
+    },
+    "fields_checked": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 8
+    },
+    "hit_semantics": {
+      "const": "literal-all-regex-first-v1"
+    },
+    "build_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    }
+  },
+  "required": [
+    "request_id",
+    "ruleset_revision",
+    "generation",
+    "normalization_id",
+    "t2s_table_id",
+    "semantics_id",
+    "base_rules_digest",
+    "decision",
+    "scan_complete",
+    "hits_truncated",
+    "hits",
+    "fields_checked",
+    "hit_semantics",
+    "build_id"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:imboy:textguard:v1:check-response"
+}

@@ -1,0 +1,54 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "enum": [
+            "INVALID_ARGUMENT",
+            "INVALID_UTF8",
+            "TEXT_TOO_LARGE",
+            "NORMALIZATION_LIMIT",
+            "MATCH_BUDGET_EXCEEDED",
+            "OVERLOADED",
+            "NOT_READY",
+            "CONNECTION_FAILED",
+            "CHECK_DEADLINE",
+            "UNAUTHENTICATED",
+            "PERMISSION_DENIED",
+            "PROTOCOL_ERROR",
+            "NORMALIZER_INCOMPATIBLE",
+            "INTERNAL_ERROR",
+            "UNSUPPORTED_RULESET",
+            "CAS_CONFLICT",
+            "INVALID_RULESET",
+            "PUBLISH_DEADLINE",
+            "PUBLISH_STATE_UNKNOWN",
+            "PUBLISH_BUSY",
+            "RETIRED_SNAPSHOT_BUSY"
+          ]
+        },
+        "request_id": {
+          "type": "string",
+          "maxLength": 64
+        },
+        "retryable": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "code",
+        "request_id",
+        "retryable"
+      ]
+    }
+  },
+  "required": [
+    "error"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:imboy:textguard:v1:error"
+}
