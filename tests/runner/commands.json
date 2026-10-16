@@ -496,6 +496,50 @@
         "AC-039"
       ],
       "scope": "T09 component: bounded gap adjacency/total budgets, hard boundaries, original-byte mapping, t2s+gap evidence, local exception coverage/compilation rejection, shared candidate budget, plus 10k gap differential and 600 frozen exception differential witnesses."
+    },
+    "t11-engine": {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--test",
+        "engine",
+        "--",
+        "--nocapture"
+      ],
+      "discovery_argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--test",
+        "engine",
+        "--",
+        "--list"
+      ],
+      "cwd": ".",
+      "environment_allowlist": [
+        "PATH",
+        "LANG",
+        "LC_ALL",
+        "TZ",
+        "TMPDIR",
+        "HOME",
+        "RUSTUP_HOME",
+        "CARGO_HOME",
+        "CARGO_TARGET_DIR"
+      ],
+      "timeout_seconds": 900,
+      "count_format": "rust",
+      "expected_exit": 0,
+      "acceptance": [
+        "AC-046",
+        "AC-047",
+        "AC-048",
+        "AC-049",
+        "AC-050",
+        "AC-051"
+      ],
+      "scope": "T11 engine: single frozen snapshot per request, full-pipeline capability matrix (literal/t2s/gap/alias/regex/exceptions), global candidate budget, strongest-action decision, bounded 100-witness truncation with hits_truncated, deterministic ordering; service-level snapshot switching belongs to T14/T22."
     }
   }
 }
