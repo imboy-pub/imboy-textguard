@@ -246,6 +246,17 @@
    ],
    "scope": "Restricted OpenCC single-scalar t2s table: embedded, idempotent, exclusive, version-gated"
   },
+  "t10-regex": {
+   "argv": ["cargo", "test", "--locked", "--test", "regex_contract"],
+   "discovery_argv": ["cargo", "test", "--locked", "--test", "regex_contract", "--", "--list"],
+   "cwd": ".",
+   "environment_allowlist": ["PATH", "LANG", "LC_ALL", "TZ", "TMPDIR", "HOME", "RUSTUP_HOME", "CARGO_HOME", "CARGO_TARGET_DIR"],
+   "timeout_seconds": 900,
+   "count_format": "rust",
+   "expected_exit": 0,
+   "acceptance": ["AC-040", "AC-041", "AC-042", "AC-043", "AC-044", "AC-045"],
+   "scope": "T10 component: HIR validation, fixed compile/cache budgets, first witness per rule/field and cancellation boundaries. AC-041 old-snapshot continuity requires T14/T22 integration."
+  },
   "t07-t2s-generator": {
    "argv": [
     "python3",

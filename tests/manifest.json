@@ -38,6 +38,10 @@
         "AC-019"
       ]
     },
+    "T10": {
+      "commands": ["t10-regex"],
+      "acceptance": ["AC-040", "AC-041", "AC-042", "AC-043", "AC-044", "AC-045"]
+    },
     "T07": {
       "commands": [
         "t07-t2s",
