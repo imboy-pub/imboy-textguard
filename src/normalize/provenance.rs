@@ -35,10 +35,15 @@ pub(crate) struct Piece {
 /// only context-sensitive lowercase rule (Final_Sigma) is 1:1, so piece
 /// lengths always match the full-string output length; callers verify the
 /// concatenated values against the authoritative output.
-pub(crate) fn lowercase_pieces(text: &str) -> Vec<Piece> {
+pub(crate) fn lowercase_pieces(
+    text: &str,
+    cancel: &dyn Fn() -> bool,
+) -> Result<Vec<Piece>, super::base::NormalizationError> {
+    super::base::check_cancel(cancel)?;
     let mut pieces = Vec::with_capacity(text.len());
     let mut cursor = 0u32;
     for character in text.chars() {
+        super::base::check_cancel(cancel)?;
         let width = character.len_utf8() as u32;
         let mut lowered = String::new();
         for mapped in character.to_lowercase() {
@@ -52,5 +57,5 @@ pub(crate) fn lowercase_pieces(text: &str) -> Vec<Piece> {
         });
         cursor += width;
     }
-    pieces
+    Ok(pieces)
 }

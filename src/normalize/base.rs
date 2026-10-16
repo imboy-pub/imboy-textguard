@@ -67,29 +67,47 @@ pub fn normalize_str(
     semantics: Semantics,
     cancel: &dyn Fn() -> bool,
 ) -> Result<Vec<Unit>, NormalizationError> {
+    check_cancel(cancel)?;
     let lowered = match semantics {
-        Semantics::CompatV1 => per_character_lowercase(text),
+        Semantics::CompatV1 => per_character_lowercase(text, cancel)?,
         Semantics::EnhancedV1 => text.to_lowercase(),
     };
-    let pieces = lowercase_pieces(text);
+    check_cancel(cancel)?;
+    let pieces = lowercase_pieces(text, cancel)?;
     let units = assemble(&pieces, &lowered, semantics, cancel)?;
-    let view_bytes: usize = units.iter().map(|unit| unit.scalar.len_utf8()).sum();
-    if view_bytes > MAX_VIEW_BYTES_PER_FIELD {
-        return Err(NormalizationError::LimitExceeded);
+    let mut view_bytes = 0;
+    for unit in &units {
+        check_cancel(cancel)?;
+        view_bytes += unit.scalar.len_utf8();
+        if view_bytes > MAX_VIEW_BYTES_PER_FIELD {
+            return Err(NormalizationError::LimitExceeded);
+        }
     }
     Ok(units)
 }
 
 /// Erlang `string:lowercase/1` flavor: per-character full mapping with no
 /// context rules. This is the frozen historical behavior (compat-v1).
-fn per_character_lowercase(text: &str) -> String {
+fn per_character_lowercase(
+    text: &str,
+    cancel: &dyn Fn() -> bool,
+) -> Result<String, NormalizationError> {
     let mut out = String::with_capacity(text.len());
     for character in text.chars() {
+        check_cancel(cancel)?;
         for mapped in character.to_lowercase() {
             out.push(mapped);
         }
     }
-    out
+    Ok(out)
+}
+
+pub(crate) fn check_cancel(cancel: &dyn Fn() -> bool) -> Result<(), NormalizationError> {
+    if cancel() {
+        Err(NormalizationError::Cancelled)
+    } else {
+        Ok(())
+    }
 }
 
 fn assemble(
@@ -98,40 +116,23 @@ fn assemble(
     semantics: Semantics,
     cancel: &dyn Fn() -> bool,
 ) -> Result<Vec<Unit>, NormalizationError> {
-    let lowered_chars: Vec<char> = lowered.chars().collect();
-    let mut expected_len = 0usize;
-    for piece in pieces {
-        expected_len += piece.lowered.chars().count();
-    }
-    if expected_len != lowered_chars.len() {
-        // A context rule would have to change output length; none exists in
-        // the frozen Unicode behavior, so this is an unproven correspondence.
-        return Err(NormalizationError::NormalizerIncompatible);
-    }
+    let lowered_chars = verified_scalars(pieces, lowered, cancel)?;
     let mut units = Vec::with_capacity(lowered_chars.len());
     let mut position = 0usize;
     for piece in pieces {
-        if cancel() {
-            return Err(NormalizationError::Cancelled);
-        }
+        check_cancel(cancel)?;
         let width = piece.lowered.chars().count();
         let segment = &lowered_chars[position..position + width];
         let mut segment_iter = segment.iter().copied();
         for expected in piece.lowered.chars() {
             let actual = segment_iter.next().expect("lengths verified above");
-            if actual != expected {
-                // Final_Sigma is the single 1:1 context divergence of the
-                // full-string lowercase; the full-string output stays
-                // authoritative. The exception is the exact triple
-                // (original Sigma, per-char sigma, full-string final sigma)
-                // and only under enhanced semantics. Anything else refuses.
-                if !(semantics == Semantics::EnhancedV1
+            if actual != expected
+                && !(semantics == Semantics::EnhancedV1
                     && piece.original == '\u{3a3}'
                     && expected == '\u{3c3}'
                     && actual == '\u{3c2}')
-                {
-                    return Err(NormalizationError::NormalizerIncompatible);
-                }
+            {
+                return Err(NormalizationError::NormalizerIncompatible);
             }
         }
         for actual in segment {
@@ -140,13 +141,41 @@ fn assemble(
         position += width;
     }
     debug_assert_eq!(position, lowered_chars.len());
-    apply_folding(units)
+    apply_folding(units, cancel)
+}
+
+fn verified_scalars(
+    pieces: &[super::provenance::Piece],
+    lowered: &str,
+    cancel: &dyn Fn() -> bool,
+) -> Result<Vec<char>, NormalizationError> {
+    check_cancel(cancel)?;
+    let mut lowered_chars = Vec::new();
+    for character in lowered.chars() {
+        check_cancel(cancel)?;
+        lowered_chars.push(character);
+    }
+    let mut expected_len = 0usize;
+    for piece in pieces {
+        check_cancel(cancel)?;
+        expected_len += piece.lowered.chars().count();
+    }
+    if expected_len != lowered_chars.len() {
+        // A context rule would have to change output length; none exists in
+        // the frozen Unicode behavior, so this is an unproven correspondence.
+        return Err(NormalizationError::NormalizerIncompatible);
+    }
+    Ok(lowered_chars)
 }
 
 /// Fullwidth folding (U+FF01..U+FF5E -> halfwidth) then zero-width removal,
 /// identical in both semantics flavors.
-fn apply_folding(mut units: Vec<Unit>) -> Result<Vec<Unit>, NormalizationError> {
+fn apply_folding(
+    mut units: Vec<Unit>,
+    cancel: &dyn Fn() -> bool,
+) -> Result<Vec<Unit>, NormalizationError> {
     for unit in units.iter_mut() {
+        check_cancel(cancel)?;
         let point = unit.scalar as u32;
         if (0xFF01..=0xFF5E).contains(&point) {
             unit.scalar = char::from_u32(point - 0xFEE0).expect("checked range");
@@ -304,6 +333,51 @@ mod tests {
     }
 
     #[test]
+    fn already_cancelled_empty_and_large_inputs_stop_at_entry() {
+        use std::cell::Cell;
+        for semantics in [Semantics::CompatV1, Semantics::EnhancedV1] {
+            for text in [String::new(), "a".repeat(16384)] {
+                let calls = Cell::new(0);
+                let cancel = || {
+                    calls.set(calls.get() + 1);
+                    true
+                };
+                assert_eq!(
+                    normalize_str(&text, semantics, &cancel),
+                    Err(NormalizationError::Cancelled)
+                );
+                assert_eq!(calls.get(), 1);
+            }
+        }
+    }
+
+    #[test]
+    fn cancellation_in_every_interruptible_stage_returns_no_partial_view() {
+        use std::cell::Cell;
+        for semantics in [Semantics::CompatV1, Semantics::EnhancedV1] {
+            let calls = Cell::new(0);
+            let text = "🙂İＡ\u{200b}ΟΣ";
+            normalize_str(text, semantics, &|| {
+                calls.set(calls.get() + 1);
+                false
+            })
+            .unwrap();
+            for stop in 1..=calls.get() {
+                let polls = Cell::new(0);
+                let cancel = || {
+                    polls.set(polls.get() + 1);
+                    polls.get() == stop
+                };
+                assert_eq!(
+                    normalize_str(text, semantics, &cancel),
+                    Err(NormalizationError::Cancelled)
+                );
+                assert_eq!(polls.get(), stop);
+            }
+        }
+    }
+
+    #[test]
     fn compat_flavor_matches_erlang_semantics_on_mixed_text() {
         // per-char lowercase ordering can only differ from full-string on
         // Final_Sigma; mixed content confirms both flavors otherwise equal
@@ -318,32 +392,32 @@ mod tests {
         use crate::normalize::provenance::lowercase_pieces;
         const NO_CANCEL: fn() -> bool = || false;
         // length divergence between per-char pieces and authoritative output
-        let pieces = lowercase_pieces("a");
+        let pieces = lowercase_pieces("a", &NO_CANCEL).unwrap();
         let mismatched_len = assemble(&pieces, "ab", Semantics::EnhancedV1, &NO_CANCEL);
         assert_eq!(
             mismatched_len,
             Err(NormalizationError::NormalizerIncompatible)
         );
         // non-sigma value divergence under both semantics
-        let pieces = lowercase_pieces("a");
+        let pieces = lowercase_pieces("a", &NO_CANCEL).unwrap();
         let mismatched_value = assemble(&pieces, "b", Semantics::CompatV1, &NO_CANCEL);
         assert_eq!(
             mismatched_value,
             Err(NormalizationError::NormalizerIncompatible)
         );
-        let pieces = lowercase_pieces("a");
+        let pieces = lowercase_pieces("a", &NO_CANCEL).unwrap();
         let mismatched_value = assemble(&pieces, "b", Semantics::EnhancedV1, &NO_CANCEL);
         assert_eq!(
             mismatched_value,
             Err(NormalizationError::NormalizerIncompatible)
         );
         // sigma divergence is accepted ONLY for enhanced semantics
-        let pieces = lowercase_pieces("\u{3a3}");
+        let pieces = lowercase_pieces("\u{3a3}", &NO_CANCEL).unwrap();
         assert_eq!(
             assemble(&pieces, "\u{3c2}", Semantics::EnhancedV1, &NO_CANCEL).unwrap()[0].scalar,
             '\u{3c2}'
         );
-        let pieces = lowercase_pieces("\u{3a3}");
+        let pieces = lowercase_pieces("\u{3a3}", &NO_CANCEL).unwrap();
         assert_eq!(
             assemble(&pieces, "\u{3c2}", Semantics::CompatV1, &NO_CANCEL),
             Err(NormalizationError::NormalizerIncompatible)
