@@ -1,4 +1,5 @@
 pub mod model;
+pub mod normalize;
 
 pub mod protocol {
     tonic::include_proto!("imboy.textguard.v1");

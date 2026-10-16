@@ -163,6 +163,48 @@
     "AC-013"
    ],
    "scope": "Independent oracle: naive/gap references, frozen OTP lowercase vectors, 10k seeded corpus with frozen expectations and mutation sensitivity"
+  },
+  "t06-normalize": {
+   "argv": [
+    "cargo",
+    "test",
+    "--locked",
+    "--lib",
+    "normalize::"
+   ],
+   "discovery_argv": [
+    "cargo",
+    "test",
+    "--locked",
+    "--lib",
+    "normalize::",
+    "--",
+    "--list"
+   ],
+   "cwd": ".",
+   "environment_allowlist": [
+    "PATH",
+    "LANG",
+    "LC_ALL",
+    "TZ",
+    "TMPDIR",
+    "HOME",
+    "RUSTUP_HOME",
+    "CARGO_HOME",
+    "CARGO_TARGET_DIR"
+   ],
+   "timeout_seconds": 900,
+   "count_format": "rust",
+   "expected_exit": 0,
+   "acceptance": [
+    "AC-014",
+    "AC-015",
+    "AC-016",
+    "AC-017",
+    "AC-018",
+    "AC-019"
+   ],
+   "scope": "Base normalization: dual lowercase flavors, provenance mapping, limits, cancellation, UTF-8 rejection"
   }
  }
 }
