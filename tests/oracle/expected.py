@@ -42,17 +42,36 @@ def dedup_hits(hits):
                                                   tuple(hit["methods"])))
 
 
-def scan_case(case):
+def exception_ranges(ruleset, scene, semantics, rule_id, variant_id, view, target):
+    """Independent literal containment in the same field and same view."""
+    ranges = []
+    if semantics != "enhanced-v1":
+        return ranges
+    for exception in ruleset["exceptions"]:
+        if (scene not in exception["scenes"] or rule_id != exception["rule_id"]
+                or variant_id not in exception["variant_ids"]
+                or view not in exception["views"]):
+            continue
+        phrase = views.base_units(exception["phrase"], semantics)
+        if view == "T":
+            phrase = views.t2s_units(phrase, rulepool.TEST_T2S_TABLE)
+        ranges.extend(naive.find_all(phrase, target))
+    return ranges
+
+
+def scan_case(case, ruleset=None):
     """Return sorted, aggregated expected hits for a case per the contract."""
     text = case["text"]
     scene = case["scene"]
-    semantics = rulepool.FIXTURE_RULESET["semantics_by_scene"][scene]
+    if ruleset is None:
+        ruleset = rulepool.FIXTURE_RULESET
+    semantics = ruleset["semantics_by_scene"][scene]
     enhanced = semantics == "enhanced-v1"
-    b_units = views.base_units(text)
+    b_units = views.base_units(text, semantics)
     t_units = (views.t2s_units(b_units, rulepool.TEST_T2S_TABLE)
                if case.get("t2s") and enhanced else None)
     hits = []
-    for rule in rulepool.FIXTURE_RULESET["literals"]:
+    for rule in ruleset["literals"]:
         if scene not in rule["scenes"]:
             continue
         word = rule["word"]
@@ -61,11 +80,14 @@ def scan_case(case):
         if t_units is not None:
             targets.append((t_units, ("literal", "t2s")))
         for target, methods in targets:
-            pattern = views.base_units(word)
+            pattern = views.base_units(word, semantics)
             if target is t_units:
                 pattern = views.t2s_units(pattern, rulepool.TEST_T2S_TABLE)
+            excluded = exception_ranges(ruleset, scene, semantics, rule["id"],
+                                        "canonical", "T" if target is t_units else "B",
+                                        target)
             for hit in naive.scan_literal(rule["id"], pattern, target,
-                                          methods=methods):
+                                          methods=methods, excluded_ranges=excluded):
                 hit["action"] = action
                 hits.append(hit)
             if rule["gap"]["enabled"] and case.get("gap") and enhanced:
@@ -78,8 +100,11 @@ def scan_case(case):
         if enhanced:
             for alias in rule["aliases"]:
                 # aliases match the B view only, never t2s/gap (plan 4.5)
-                pattern = views.base_units(alias["pattern"])
-                for hit in naive.scan_alias(rule["id"], alias, pattern, b_units):
+                pattern = views.base_units(alias["pattern"], semantics)
+                excluded = exception_ranges(ruleset, scene, semantics, rule["id"],
+                                            alias["variant_id"], "B", b_units)
+                for hit in naive.scan_alias(rule["id"], alias, pattern, b_units,
+                                            excluded_ranges=excluded):
                     hit["action"] = alias["action"]
                     hits.append(hit)
     return dedup_hits(hits)

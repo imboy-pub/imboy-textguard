@@ -1,0 +1,35 @@
+{
+  "extraction": "tests/oracle/extract_unicode16.py --source-dir <official-inputs> --check",
+  "license": "Unicode-3.0",
+  "license_note": "LICENSE.txt is the official current license retrieved 2026-10-16, not a claim of a versioned 2024 license snapshot.",
+  "scope": "Simple lowercase from UnicodeData field 13; unconditional full lowercase and default Final_Sigma from SpecialCasing; complete Cased and Case_Ignorable properties. Locale-specific mappings excluded.",
+  "sources": {
+    "DerivedCoreProperties.txt": {
+      "bytes": 1115959,
+      "resolved_url": "https://www.unicode.org/Public/16.0.0/ucd/DerivedCoreProperties.txt",
+      "sha256": "39d35161f2954497f69e08bdb9e701493f476a3d30222de20028feda36c1dabd",
+      "url": "https://www.unicode.org/Public/16.0.0/ucd/DerivedCoreProperties.txt"
+    },
+    "LICENSE.txt": {
+      "bytes": 1995,
+      "resolved_url": "https://www.unicode.org/license.txt",
+      "sha256": "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96",
+      "url": "https://www.unicode.org/license.txt"
+    },
+    "SpecialCasing.txt": {
+      "bytes": 16809,
+      "resolved_url": "https://www.unicode.org/Public/16.0.0/ucd/SpecialCasing.txt",
+      "sha256": "8d5de354eef79f2395a54c9c7dcebbaf3d30fc962d0f85611ea97aa973a0c451",
+      "url": "https://www.unicode.org/Public/16.0.0/ucd/SpecialCasing.txt"
+    },
+    "UnicodeData.txt": {
+      "bytes": 2175362,
+      "resolved_url": "https://www.unicode.org/Public/16.0.0/ucd/UnicodeData.txt",
+      "sha256": "ff58e5823bd095166564a006e47d111130813dcf8bf234ef79fa51a870edb48f",
+      "url": "https://www.unicode.org/Public/16.0.0/ucd/UnicodeData.txt"
+    }
+  },
+  "table_file": "lowercase.json",
+  "table_sha256": "d2466486c9d7678e1a29135777f10fb9fbb1355c334eef15c1f84245b77c67f5",
+  "unicode_version": "16.0.0"
+}

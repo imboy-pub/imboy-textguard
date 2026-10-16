@@ -4,14 +4,17 @@ This module is deliberately independent of the Rust production normalizer:
 expectations frozen here are later compared against the engine in the T08/T11
 differentials. Reference semantics per plan section 4.3:
 
-    validate UTF-8 -> full-string Unicode lowercase -> U+FF01..U+FF5E to
+    validate UTF-8 -> pinned Unicode 16 lowercase -> U+FF01..U+FF5E to
     halfwidth -> delete U+200B/U+200C/U+200D/U+FEFF
 
 The OTP compatibility flavor (``otp_compat_lower``) reproduces Erlang
 ``string:lowercase/1`` on the frozen probe vectors: per-character full
 lowercase WITHOUT the Final_Sigma context rule. Both flavors are exercised by
-the frozen vectors so T06 can implement and verify each side.
+the frozen vectors so T06 can implement and verify each side. The enhanced
+flavor applies the default Final_Sigma context using official UCD properties.
 """
+
+import unicode16
 
 ZERO_WIDTH = frozenset("\u200b\u200c\u200d\ufeff")
 
@@ -43,36 +46,21 @@ class NormalizerIncompatible(Exception):
 
 def otp_compat_lower(text):
     """Erlang string:lowercase flavor: per-char full mapping, no context rules."""
-    return "".join(character.lower() for character in text)
+    return unicode16.lowercase(text, "compat-v1")
 
 
-def base_units(text):
+def base_units(text, semantics):
     """Build the B view of ``text`` with per-character provenance.
 
-    Returns the list of units. Raises NormalizerIncompatible when the
-    per-character reconstruction cannot be proven equal to the full-string
-    lowercase (the contract requires refusing instead of guessing offsets).
+    Each source scalar owns all of its mapped scalars, including expansions.
+    Casing is computed directly from UCD, not aligned to a host lower result.
     """
-    lowered_full = text.lower()
-    pieces = [(character, character.lower()) for character in text]
-    if sum(len(low) for _, low in pieces) != len(lowered_full):
-        raise NormalizerIncompatible("context rule changed output length")
-    position = 0
     lowered_units = []
     byte_cursor = 0
-    for character, low in pieces:
+    for character, mapped in zip(text, unicode16.lowercase_parts(text, semantics)):
         byte_end = byte_cursor + len(character.encode("utf-8"))
-        segment = lowered_full[position:position + len(low)]
-        if segment != low:
-            # Final_Sigma is the single 1:1 context rule; the full-string
-            # output stays authoritative, per-char value is only a check.
-            # Anything else is a refusal, never a guessed alignment.
-            if not (character == "\u03a3" and segment == "\u03c2" and low == "\u03c3"):
-                raise NormalizerIncompatible(
-                    f"per-character lowercase diverged at {character!r}")
-        for out in segment:
+        for out in mapped:
             lowered_units.append(Unit(out, byte_cursor, byte_end))
-        position += len(low)
         byte_cursor = byte_end
     units = []
     for unit in lowered_units:
