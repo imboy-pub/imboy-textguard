@@ -1,7 +1,8 @@
 //! Shared check engine over one frozen rule snapshot (plan sections 4.9,
 //! 4.11 and T11). Every request — HTTP or gRPC — runs against a single
-//! immutable snapshot: one revision, one generation, one budget across all
-//! fields, B/T/G/exception matching and regex first witnesses.
+//! immutable snapshot: one revision, one generation, one candidate budget
+//! across all fields and B/T/G/exception matching; regex first witnesses
+//! are independently bounded (<=32 rules x fields) and share cancellation.
 
 use std::collections::HashMap;
 
@@ -190,10 +191,17 @@ impl Snapshot {
     /// Attach frozen metadata; unknown rule/variant pairs (regex variants)
     /// pass through the regex Hit directly and are not looked up here.
     fn witness(&self, raw: &RawHit, field_id: &str) -> Option<Hit> {
-        self.metadata
+        let meta = self
+            .metadata
             .get(&raw.rule_id)
-            .and_then(|variants| variants.get(&raw.variant_id))
-            .map(|meta| to_hit(raw, field_id, meta))
+            .and_then(|variants| variants.get(&raw.variant_id));
+        debug_assert!(
+            meta.is_some(),
+            "raw hit without frozen metadata: rule {} variant {}",
+            raw.rule_id,
+            raw.variant_id
+        );
+        meta.map(|meta| to_hit(raw, field_id, meta))
     }
 }
 
@@ -236,7 +244,7 @@ fn metadata_index(ruleset: &RuleSet) -> MetadataIndex {
 /// Stable digest of the ruleset content (canonical JSON serialization).
 /// The publication layer (T14) derives ETag/generation from the same bytes.
 fn ruleset_digest(ruleset: &RuleSet) -> String {
-    let canonical = serde_json::to_vec(ruleset).unwrap_or_default();
+    let canonical = serde_json::to_vec(ruleset).expect("ruleset serialization cannot fail");
     format!("{:x}", Sha256::digest(canonical))
 }
 
