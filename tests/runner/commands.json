@@ -247,47 +247,174 @@
    "scope": "Restricted OpenCC single-scalar t2s table: embedded, idempotent, exclusive, version-gated"
   },
   "t17-runtime": {
-   "argv": ["cargo", "test", "--locked", "--test", "runtime_contract"],
-   "discovery_argv": ["cargo", "test", "--locked", "--test", "runtime_contract", "--", "--list"],
+   "argv": [
+    "cargo",
+    "test",
+    "--locked",
+    "--test",
+    "runtime_contract"
+   ],
+   "discovery_argv": [
+    "cargo",
+    "test",
+    "--locked",
+    "--test",
+    "runtime_contract",
+    "--",
+    "--list"
+   ],
    "cwd": ".",
-   "environment_allowlist": ["PATH", "LANG", "LC_ALL", "TZ", "TMPDIR", "HOME", "RUSTUP_HOME", "CARGO_HOME", "CARGO_TARGET_DIR"],
+   "environment_allowlist": [
+    "PATH",
+    "LANG",
+    "LC_ALL",
+    "TZ",
+    "TMPDIR",
+    "HOME",
+    "RUSTUP_HOME",
+    "CARGO_HOME",
+    "CARGO_TARGET_DIR"
+   ],
    "timeout_seconds": 900,
    "count_format": "rust",
    "expected_exit": 0,
-   "acceptance": ["AC-087", "AC-088"],
+   "acceptance": [
+    "AC-087",
+    "AC-088"
+   ],
    "scope": "Runtime component only; shared limits and actual blocking-task lifetime. Real HTTP/gRPC, TLS, privacy, and deployment remain T17/T23 obligations."
   },
   "t08-matcher": {
-   "argv": ["cargo", "test", "--locked", "--test", "matcher", "--", "--nocapture"],
-   "discovery_argv": ["cargo", "test", "--locked", "--test", "matcher", "--", "--list"],
+   "argv": [
+    "cargo",
+    "test",
+    "--locked",
+    "--test",
+    "matcher",
+    "--",
+    "--nocapture"
+   ],
+   "discovery_argv": [
+    "cargo",
+    "test",
+    "--locked",
+    "--test",
+    "matcher",
+    "--",
+    "--list"
+   ],
    "cwd": ".",
-   "environment_allowlist": ["PATH", "LANG", "LC_ALL", "TZ", "TMPDIR", "HOME", "RUSTUP_HOME", "CARGO_HOME", "CARGO_TARGET_DIR"],
+   "environment_allowlist": [
+    "PATH",
+    "LANG",
+    "LC_ALL",
+    "TZ",
+    "TMPDIR",
+    "HOME",
+    "RUSTUP_HOME",
+    "CARGO_HOME",
+    "CARGO_TARGET_DIR"
+   ],
    "timeout_seconds": 900,
    "count_format": "rust",
    "expected_exit": 0,
-   "acceptance": ["AC-013", "AC-024", "AC-025", "AC-026", "AC-027", "AC-028", "AC-029", "AC-030", "AC-031"],
+   "acceptance": [
+    "AC-013",
+    "AC-024",
+    "AC-025",
+    "AC-026",
+    "AC-027",
+    "AC-028",
+    "AC-029",
+    "AC-030",
+    "AC-031"
+   ],
    "scope": "Literal/alias component: Standard overlapping, budgets and 10k seeded literal/alias projection; gap and full-pipeline AC-013 remain T09/T11."
   },
   "t08-matcher-unit": {
-   "argv": ["cargo", "test", "--locked", "--lib", "matcher::", "--", "--skip", "matcher::regex::"],
-   "discovery_argv": ["cargo", "test", "--locked", "--lib", "matcher::", "--", "--skip", "matcher::regex::", "--list"],
+   "argv": [
+    "cargo",
+    "test",
+    "--locked",
+    "--lib",
+    "matcher::",
+    "--",
+    "--skip",
+    "matcher::regex::"
+   ],
+   "discovery_argv": [
+    "cargo",
+    "test",
+    "--locked",
+    "--lib",
+    "matcher::",
+    "--",
+    "--skip",
+    "matcher::regex::",
+    "--list"
+   ],
    "cwd": ".",
-   "environment_allowlist": ["PATH", "LANG", "LC_ALL", "TZ", "TMPDIR", "HOME", "RUSTUP_HOME", "CARGO_HOME", "CARGO_TARGET_DIR"],
+   "environment_allowlist": [
+    "PATH",
+    "LANG",
+    "LC_ALL",
+    "TZ",
+    "TMPDIR",
+    "HOME",
+    "RUSTUP_HOME",
+    "CARGO_HOME",
+    "CARGO_TARGET_DIR"
+   ],
    "timeout_seconds": 900,
    "count_format": "rust",
    "expected_exit": 0,
-   "acceptance": ["AC-024", "AC-027", "AC-031"],
+   "acceptance": [
+    "AC-024",
+    "AC-027",
+    "AC-031"
+   ],
    "scope": "T08 library aggregation and two literal expansion-budget checks; regex has its own task selector."
   },
   "t10-regex": {
-   "argv": ["cargo", "test", "--locked", "--test", "regex_contract"],
-   "discovery_argv": ["cargo", "test", "--locked", "--test", "regex_contract", "--", "--list"],
+   "argv": [
+    "cargo",
+    "test",
+    "--locked",
+    "--test",
+    "regex_contract"
+   ],
+   "discovery_argv": [
+    "cargo",
+    "test",
+    "--locked",
+    "--test",
+    "regex_contract",
+    "--",
+    "--list"
+   ],
    "cwd": ".",
-   "environment_allowlist": ["PATH", "LANG", "LC_ALL", "TZ", "TMPDIR", "HOME", "RUSTUP_HOME", "CARGO_HOME", "CARGO_TARGET_DIR"],
+   "environment_allowlist": [
+    "PATH",
+    "LANG",
+    "LC_ALL",
+    "TZ",
+    "TMPDIR",
+    "HOME",
+    "RUSTUP_HOME",
+    "CARGO_HOME",
+    "CARGO_TARGET_DIR"
+   ],
    "timeout_seconds": 900,
    "count_format": "rust",
    "expected_exit": 0,
-   "acceptance": ["AC-040", "AC-041", "AC-042", "AC-043", "AC-044", "AC-045"],
+   "acceptance": [
+    "AC-040",
+    "AC-041",
+    "AC-042",
+    "AC-043",
+    "AC-044",
+    "AC-045"
+   ],
    "scope": "T10 component: HIR validation, fixed compile/cache budgets, first witness per rule/field and cancellation boundaries. AC-041 old-snapshot continuity requires T14/T22 integration."
   },
   "t07-t2s-generator": {
@@ -321,6 +448,54 @@
     "AC-022"
    ],
    "scope": "Generator reproducibility against the locked OpenCC source and committed artifact"
+  },
+  "t09-gap-exceptions": {
+   "argv": [
+    "cargo",
+    "test",
+    "--locked",
+    "--test",
+    "matcher",
+    "gap_exceptions::",
+    "--",
+    "--nocapture"
+   ],
+   "discovery_argv": [
+    "cargo",
+    "test",
+    "--locked",
+    "--test",
+    "matcher",
+    "gap_exceptions::",
+    "--",
+    "--list"
+   ],
+   "cwd": ".",
+   "environment_allowlist": [
+    "PATH",
+    "LANG",
+    "LC_ALL",
+    "TZ",
+    "TMPDIR",
+    "HOME",
+    "RUSTUP_HOME",
+    "CARGO_HOME",
+    "CARGO_TARGET_DIR"
+   ],
+   "timeout_seconds": 900,
+   "count_format": "rust",
+   "expected_exit": 0,
+   "acceptance": [
+    "AC-032",
+    "AC-033",
+    "AC-034",
+    "AC-035",
+    "AC-036",
+    "AC-037",
+    "AC-038",
+    "AC-039"
+   ],
+   "scope": "T09 component: bounded gap adjacency/total budgets, hard boundaries, original-byte mapping, t2s+gap evidence, local exception coverage/compilation rejection, shared candidate budget, plus 10k gap differential and 600 frozen exception differential witnesses."
   }
  }
 }

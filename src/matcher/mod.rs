@@ -1,6 +1,8 @@
 //! Literal/alias matching over normalized views (plan sections 4.4-4.5).
 
 pub mod alias;
+pub mod exceptions;
+pub mod gap;
 pub mod literal;
 pub mod regex;
 
