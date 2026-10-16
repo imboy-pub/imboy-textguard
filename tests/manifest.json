@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "commands_file": "runner/commands.json",
+  "tasks": {
+    "T04": {
+      "commands": [
+        "runner-selftest",
+        "t04-build-contract",
+        "t04-migration"
+      ],
+      "acceptance": [
+        "AC-009",
+        "AC-010",
+        "AC-113",
+        "AC-114"
+      ]
+    }
+  },
+  "groups": {
+    "runner": [
+      "runner-selftest"
+    ],
+    "control": [
+      "control-selftest"
+    ]
+  },
+  "limitations": [
+    "Build selector requires the integrated tree (tests/build_contract.py from the skeleton lane).",
+    "Migration selector requires TEXTGUARD_FORK_ROOT; absence is BLOCKED, never skipped.",
+    "No automatic full EUnit, production access, commit, push or deployment.",
+    "Default runner checkpoint tests are synthetic and use repository helpers. External control validation is a separate explicit group."
+  ]
+}
