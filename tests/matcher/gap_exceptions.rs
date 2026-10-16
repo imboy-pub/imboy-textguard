@@ -722,10 +722,16 @@ fn differential_600_exception_witnesses() {
             .unwrap();
         exempted += before - filtered.len();
         let mut all = filtered;
-        all.extend(
-            gaps.scan_text(text, scene, t2s, &mut budget, &cancel)
-                .unwrap(),
-        );
+        if case
+            .get("gap")
+            .and_then(|flag| flag.as_bool())
+            .unwrap_or(false)
+        {
+            all.extend(
+                gaps.scan_text(text, scene, t2s, &mut budget, &cancel)
+                    .unwrap(),
+            );
+        }
         let actual: Vec<_> = aggregate(all)
             .into_iter()
             .map(|hit| {

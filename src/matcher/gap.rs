@@ -10,7 +10,10 @@
 use aho_corasick::{AhoCorasick, AhoCorasickBuilder, MatchKind};
 use std::collections::{HashMap, HashSet};
 
-use super::literal::{CompileError, CompileIssue, MAX_LITERAL_BYTES, MAX_LITERAL_SCALARS};
+use super::literal::{
+    CompileError, CompileIssue, MAX_COMPILED_ENTRIES, MAX_LITERAL_BYTES, MAX_LITERAL_SCALARS,
+    MAX_NORMALIZED_PATTERN_BYTES,
+};
 use super::{aggregate, CandidateBudget, RawHit};
 use crate::model::{ErrorCode, MatchMethod, RuleAction, RuleSet, Scene, SceneSemantics, Semantics};
 use crate::normalize::provenance::Unit;
@@ -358,11 +361,15 @@ fn view_string(units: &[Unit]) -> String {
     units.iter().map(|unit| unit.scalar).collect()
 }
 
+/// Section-5 compile budgets enforced independently per gap view bank.
+/// Cross-channel totals (literal + gap + regex) are the T11 engine's duty.
 #[derive(Default)]
 struct PatternBank {
     indices: HashMap<String, usize>,
     patterns: Vec<String>,
     metas: Vec<Vec<GapMeta>>,
+    entries: usize,
+    normalized_bytes: u64,
 }
 
 impl PatternBank {
@@ -370,6 +377,14 @@ impl PatternBank {
         if view.is_empty() {
             return Err(CompileIssue::EmptyPattern.into());
         }
+        if self.entries == MAX_COMPILED_ENTRIES {
+            return Err(CompileIssue::CompiledEntryLimit.into());
+        }
+        if view.len() as u64 > MAX_NORMALIZED_PATTERN_BYTES - self.normalized_bytes {
+            return Err(CompileIssue::NormalizedByteLimit.into());
+        }
+        self.entries += 1;
+        self.normalized_bytes += view.len() as u64;
         if let Some(&index) = self.indices.get(&view) {
             if self.metas[index].len() == super::literal::MAX_METADATA_FANOUT {
                 return Err(CompileIssue::MetadataFanout.into());
@@ -410,5 +425,46 @@ fn normalization_error(error: base::NormalizationError) -> ErrorCode {
         base::NormalizationError::LimitExceeded => ErrorCode::NormalizationLimit,
         base::NormalizationError::NormalizerIncompatible => ErrorCode::NormalizerIncompatible,
         base::NormalizationError::Cancelled => ErrorCode::CheckDeadline,
+    }
+}
+
+#[cfg(test)]
+mod budget_tests {
+    use super::*;
+
+    fn meta(rule: &str) -> GapMeta {
+        GapMeta {
+            rule_id: rule.into(),
+            action: RuleAction::Review,
+            scenes: vec![Scene::ChannelMessage],
+        }
+    }
+
+    #[test]
+    fn gap_bank_enforces_the_entry_budget_as_a_closed_interval() {
+        let mut bank = PatternBank {
+            entries: MAX_COMPILED_ENTRIES - 1,
+            ..PatternBank::default()
+        };
+        bank.push("测".into(), meta("1001")).unwrap();
+        assert_eq!(bank.entries, MAX_COMPILED_ENTRIES);
+        assert_eq!(
+            bank.push("试".into(), meta("1002")).unwrap_err().issue,
+            CompileIssue::CompiledEntryLimit
+        );
+    }
+
+    #[test]
+    fn gap_bank_enforces_the_byte_budget_as_a_closed_interval() {
+        let mut bank = PatternBank {
+            normalized_bytes: MAX_NORMALIZED_PATTERN_BYTES - 1,
+            ..PatternBank::default()
+        };
+        assert_eq!(
+            bank.push("测试".into(), meta("1003")).unwrap_err().issue,
+            CompileIssue::NormalizedByteLimit
+        );
+        bank.push("a".into(), meta("1004")).unwrap();
+        assert_eq!(bank.normalized_bytes, MAX_NORMALIZED_PATTERN_BYTES);
     }
 }
