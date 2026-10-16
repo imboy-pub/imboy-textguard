@@ -327,7 +327,10 @@ class RunnerTests(Sandbox):
         self.assertEqual(result["tests_executed"], 0)
 
     def test_missing_task_and_required_ac_blocked(self):
-        response = self.invoke("--task", "T06", "--evidence", str(self.evidence))
+        manifest = json.loads((self.source / "tests/manifest.json").read_text())
+        unregistered = next(f"T{number:02d}" for number in range(30)
+                            if f"T{number:02d}" not in manifest["tasks"])
+        response = self.invoke("--task", unregistered, "--evidence", str(self.evidence))
         self.assertEqual(response.returncode, 2)
         result = json.loads((self.evidence / "result.json").read_text())
         self.assertEqual(result["status"], "BLOCKED")

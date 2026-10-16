@@ -37,6 +37,18 @@
         "AC-018",
         "AC-019"
       ]
+    },
+    "T07": {
+      "commands": [
+        "t07-t2s",
+        "t07-t2s-generator"
+      ],
+      "acceptance": [
+        "AC-020",
+        "AC-021",
+        "AC-022",
+        "AC-023"
+      ]
     }
   },
   "groups": {
