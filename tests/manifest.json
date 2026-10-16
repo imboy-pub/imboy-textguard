@@ -60,6 +60,7 @@
     }
   },
   "groups": {
+    "runtime-component": ["t17-runtime"],
     "runner": [
       "runner-selftest"
     ],
