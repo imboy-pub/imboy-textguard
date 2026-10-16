@@ -1,0 +1,8 @@
+{
+  "case_count": 600,
+  "cases_file": "cases-600.jsonl",
+  "cases_sha256": "408d0ee72d0584fa45f44b4a52e84634dfb5d6c492b485514e1608eae0d8506c",
+  "seed": 20261017,
+  "ruleset_file": "ruleset.json",
+  "note": "expectations computed by the independent Python oracle only; production differential consumers must not regenerate them"
+}
