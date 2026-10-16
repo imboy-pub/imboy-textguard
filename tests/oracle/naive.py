@@ -27,10 +27,14 @@ def hit_range(text_units, start_index, end_index):
     return first.start, last.end
 
 
-def scan_literal(rule_id, pattern_units, text_units, methods=("literal",)):
+def scan_literal(rule_id, pattern_units, text_units, methods=("literal",),
+                 excluded_ranges=()):
     """All literal hits of one pattern with provenance-resolved byte ranges."""
     hits = []
     for start_index, end_index in find_all(pattern_units, text_units):
+        if any(start <= start_index and end_index <= end
+               for start, end in excluded_ranges):
+            continue
         start, end = hit_range(text_units, start_index, end_index)
         hits.append({"rule_id": rule_id, "variant_id": "canonical",
                      "start": start, "end": end, "methods": list(methods)})
@@ -51,13 +55,17 @@ def ascii_word_boundary_ok(text_units, index, span):
 
 
 def _is_word_byte(scalar):
-    return scalar.isascii() and (scalar.isalnum() or scalar == "_")
+    return ("A" <= scalar <= "Z" or "a" <= scalar <= "z"
+            or "0" <= scalar <= "9" or scalar == "_")
 
 
-def scan_alias(rule_id, alias, pattern_units, text_units):
+def scan_alias(rule_id, alias, pattern_units, text_units, excluded_ranges=()):
     """All alias hits; boundary=ascii_word applies the ASCII fence."""
     hits = []
     for start_index, end_index in find_all(pattern_units, text_units):
+        if any(start <= start_index and end_index <= end
+               for start, end in excluded_ranges):
+            continue
         if alias["boundary"] == "ascii_word" and not ascii_word_boundary_ok(
                 text_units, start_index, end_index - start_index):
             continue

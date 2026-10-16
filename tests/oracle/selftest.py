@@ -22,6 +22,8 @@ import generate
 import naive
 import rulepool
 import views
+import unicode16
+from unicode_selftest import Unicode16Tests, SemanticsPropagationTests
 
 FIXTURES = ORACLE.parent / "fixtures/oracle"
 
@@ -52,25 +54,27 @@ class NaiveReferenceTests(unittest.TestCase):
         # AC-011: patterns a, ab, b over text "ab" -> exactly three hits.
         hits = []
         for pattern in ("a", "ab", "b"):
-            pattern_units = views.base_units(pattern)
-            text_units = views.base_units("ab")
+            pattern_units = views.base_units(pattern, "enhanced-v1")
+            text_units = views.base_units("ab", "enhanced-v1")
             hits.extend(naive.scan_literal(pattern, pattern_units, text_units))
         ranges = sorted((hit["start"], hit["end"]) for hit in hits)
         self.assertEqual(ranges, [(0, 1), (0, 2), (1, 2)])
 
     def test_plan_410_offset_hand_cases(self):
-        units = views.base_units("🙂测试词")
-        hits = naive.scan_literal("1001", views.base_units("测试词"), units)
+        units = views.base_units("🙂测试词", "enhanced-v1")
+        hits = naive.scan_literal("1001", views.base_units("测试词", "enhanced-v1"), units)
         self.assertEqual([(hit["start"], hit["end"]) for hit in hits], [(4, 13)])
 
-        units = views.base_units("测\u200b试词")
-        hits = naive.scan_literal("1001", views.base_units("测试词"), units)
+        units = views.base_units("测\u200b试词", "enhanced-v1")
+        hits = naive.scan_literal("1001", views.base_units("测试词", "enhanced-v1"), units)
         self.assertEqual([(hit["start"], hit["end"]) for hit in hits], [(0, 12)])
 
     def test_gap_hand_case_t2s_and_range(self):
         # plan 4.10: 🙂測*試_詞 with t2s+gap hits the original range [4,15).
-        units = views.t2s_units(views.base_units("🙂測*試_詞"), rulepool.TEST_T2S_TABLE)
-        pattern = views.t2s_units(views.base_units("测试词"), rulepool.TEST_T2S_TABLE)
+        units = views.t2s_units(views.base_units("🙂測*試_詞", "enhanced-v1"),
+                                rulepool.TEST_T2S_TABLE)
+        pattern = views.t2s_units(views.base_units("测试词", "enhanced-v1"),
+                                  rulepool.TEST_T2S_TABLE)
         hits = gap_reference.scan_gap("1001", pattern, units, ["literal", "t2s", "gap"])
         self.assertEqual([(hit["start"], hit["end"]) for hit in hits], [(4, 15)])
         self.assertEqual(hits[0]["methods"], ["literal", "t2s", "gap"])
@@ -89,8 +93,8 @@ class NaiveReferenceTests(unittest.TestCase):
         alias = {"variant_id": "pinyin-01", "boundary": "ascii_word"}
         for text, count in (("ceshici", 1), ("myceshicitool", 0),
                             ("中文ceshici中文", 1), ("ce shi ci", 0)):
-            units = views.base_units(text)
-            hits = naive.scan_alias("1001", alias, views.base_units("ceshici"), units)
+            units = views.base_units(text, "enhanced-v1")
+            hits = naive.scan_alias("1001", alias, views.base_units("ceshici", "enhanced-v1"), units)
             self.assertEqual(len(hits), count, text)
 
 
@@ -100,7 +104,7 @@ class OtpVectorTests(unittest.TestCase):
             with self.subTest(vector=vector["input"]):
                 otp = views.otp_compat_lower(vector["input"]).encode()
                 self.assertEqual(list(otp), vector["otp_bytes"])
-                reference = vector["input"].lower().encode()
+                reference = unicode16.lowercase(vector["input"], "enhanced-v1").encode()
                 if vector["divergent"]:
                     self.assertEqual(list(reference), vector["reference_bytes"])
                     self.assertNotEqual(list(otp), list(reference))
@@ -110,9 +114,9 @@ class OtpVectorTests(unittest.TestCase):
 
     def test_base_view_reconstruction_matches_reference(self):
         for vector in OTP_VECTORS:
-            units = views.base_units(vector["input"])
+            units = views.base_units(vector["input"], "enhanced-v1")
             self.assertEqual("".join(unit.scalar for unit in units),
-                             vector["input"].lower())
+                             unicode16.lowercase(vector["input"], "enhanced-v1"))
 
 
 class CorpusTests(unittest.TestCase):
@@ -228,6 +232,8 @@ if __name__ == "__main__":
         loader.loadTestsFromTestCase(OtpVectorTests),
         loader.loadTestsFromTestCase(CorpusTests),
         loader.loadTestsFromTestCase(MutationTests),
+        loader.loadTestsFromTestCase(Unicode16Tests),
+        loader.loadTestsFromTestCase(SemanticsPropagationTests),
     ])
     discovered = list(flatten(suite))
     arguments = [argument for argument in sys.argv[1:]]
