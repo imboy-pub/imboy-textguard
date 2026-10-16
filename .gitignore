@@ -1,0 +1,7 @@
+/target/
+/.env
+/.env.*
+!/.env.example
+/var/
+/test-results/
+*.log
