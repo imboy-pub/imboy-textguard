@@ -1,0 +1,20 @@
+{
+  "case_count": 10000,
+  "cases_file": "cases-10k.jsonl",
+  "cases_sha256": "7940e05b1b45ede1cdccd708e595f15250312a9db2b3a87b9d3b26ab7f6a7e41",
+  "category_plan": {
+    "alias_negative": 700,
+    "alias_positive": 1000,
+    "emoji_boundary": 600,
+    "fullwidth": 800,
+    "gap": 1300,
+    "hard_boundary_negative": 600,
+    "literal_mixed": 1500,
+    "noise_no_hit": 800,
+    "t2s": 1300,
+    "zero_width": 1400
+  },
+  "note": "expectations computed by the independent Python oracle only; production differential consumers must not regenerate them",
+  "rulepool": "fixture ruleset test-t2s-v1 (see tests/oracle/rulepool.py)",
+  "seed": 20261016
+}

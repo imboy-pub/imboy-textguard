@@ -14,6 +14,16 @@
         "AC-113",
         "AC-114"
       ]
+    },
+    "T05": {
+      "commands": [
+        "t05-oracle"
+      ],
+      "acceptance": [
+        "AC-011",
+        "AC-012",
+        "AC-013"
+      ]
     }
   },
   "groups": {

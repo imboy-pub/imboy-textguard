@@ -133,6 +133,36 @@
     "AC-113"
    ],
    "scope": "Reproducible proof that no prior TextGuard implementation exists inside the aho-corasick fork"
+  },
+  "t05-oracle": {
+   "argv": [
+    "python3",
+    "-B",
+    "tests/oracle/selftest.py"
+   ],
+   "discovery_argv": [
+    "python3",
+    "-B",
+    "tests/oracle/selftest.py",
+    "--list"
+   ],
+   "cwd": ".",
+   "environment_allowlist": [
+    "PATH",
+    "LANG",
+    "LC_ALL",
+    "TZ",
+    "TMPDIR"
+   ],
+   "timeout_seconds": 300,
+   "count_format": "unittest",
+   "expected_exit": 0,
+   "acceptance": [
+    "AC-011",
+    "AC-012",
+    "AC-013"
+   ],
+   "scope": "Independent oracle: naive/gap references, frozen OTP lowercase vectors, 10k seeded corpus with frozen expectations and mutation sensitivity"
   }
  }
 }
