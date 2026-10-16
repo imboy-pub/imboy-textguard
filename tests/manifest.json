@@ -24,6 +24,19 @@
         "AC-012",
         "AC-013"
       ]
+    },
+    "T06": {
+      "commands": [
+        "t06-normalize"
+      ],
+      "acceptance": [
+        "AC-014",
+        "AC-015",
+        "AC-016",
+        "AC-017",
+        "AC-018",
+        "AC-019"
+      ]
     }
   },
   "groups": {
