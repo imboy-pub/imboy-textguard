@@ -246,6 +246,17 @@
    ],
    "scope": "Restricted OpenCC single-scalar t2s table: embedded, idempotent, exclusive, version-gated"
   },
+  "t17-runtime": {
+   "argv": ["cargo", "test", "--locked", "--test", "runtime_contract"],
+   "discovery_argv": ["cargo", "test", "--locked", "--test", "runtime_contract", "--", "--list"],
+   "cwd": ".",
+   "environment_allowlist": ["PATH", "LANG", "LC_ALL", "TZ", "TMPDIR", "HOME", "RUSTUP_HOME", "CARGO_HOME", "CARGO_TARGET_DIR"],
+   "timeout_seconds": 900,
+   "count_format": "rust",
+   "expected_exit": 0,
+   "acceptance": ["AC-087", "AC-088"],
+   "scope": "Runtime component only; shared limits and actual blocking-task lifetime. Real HTTP/gRPC, TLS, privacy, and deployment remain T17/T23 obligations."
+  },
   "t07-t2s-generator": {
    "argv": [
     "python3",
