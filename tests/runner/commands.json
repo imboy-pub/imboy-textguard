@@ -205,6 +205,78 @@
     "AC-019"
    ],
    "scope": "Base normalization: dual lowercase flavors, provenance mapping, limits, cancellation, UTF-8 rejection"
+  },
+  "t07-t2s": {
+   "argv": [
+    "cargo",
+    "test",
+    "--locked",
+    "--lib",
+    "t2s::"
+   ],
+   "discovery_argv": [
+    "cargo",
+    "test",
+    "--locked",
+    "--lib",
+    "t2s::",
+    "--",
+    "--list"
+   ],
+   "cwd": ".",
+   "environment_allowlist": [
+    "PATH",
+    "LANG",
+    "LC_ALL",
+    "TZ",
+    "TMPDIR",
+    "HOME",
+    "RUSTUP_HOME",
+    "CARGO_HOME",
+    "CARGO_TARGET_DIR"
+   ],
+   "timeout_seconds": 900,
+   "count_format": "rust",
+   "expected_exit": 0,
+   "acceptance": [
+    "AC-020",
+    "AC-021",
+    "AC-022",
+    "AC-023"
+   ],
+   "scope": "Restricted OpenCC single-scalar t2s table: embedded, idempotent, exclusive, version-gated"
+  },
+  "t07-t2s-generator": {
+   "argv": [
+    "python3",
+    "-B",
+    "tests/t2s/generator_selftest.py"
+   ],
+   "discovery_argv": [
+    "python3",
+    "-B",
+    "tests/t2s/generator_selftest.py",
+    "--list"
+   ],
+   "cwd": ".",
+   "environment_allowlist": [
+    "PATH",
+    "LANG",
+    "LC_ALL",
+    "TZ",
+    "TMPDIR",
+    "TEXTGUARD_T2S_SOURCE"
+   ],
+   "required_environment": [
+    "TEXTGUARD_T2S_SOURCE"
+   ],
+   "timeout_seconds": 120,
+   "count_format": "unittest",
+   "expected_exit": 0,
+   "acceptance": [
+    "AC-022"
+   ],
+   "scope": "Generator reproducibility against the locked OpenCC source and committed artifact"
   }
  }
 }

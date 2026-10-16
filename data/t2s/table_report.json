@@ -1,0 +1,14 @@
+{
+  "excluded_cycle": 0,
+  "excluded_identity": 0,
+  "excluded_multi_target": 56,
+  "exclusions_sha256": "d0bb9bb7b77daa5a484bc383234f28ecfc676b0f9a1c5549cc748599df18286b",
+  "generator_version": "1",
+  "idempotence": "T(T(x)) == T(x) verified exhaustively",
+  "input_entries": 4113,
+  "source_sha256": "6b5a0a799bea2bb22c001f635eaa3fc2904310f0c08addbff275477a80ecf09a",
+  "source_url": "https://raw.githubusercontent.com/BYVoid/OpenCC/ver.1.1.9/data/dictionary/TSCharacters.txt",
+  "table_id": "opencc-1.1.9-single-v1",
+  "table_sha256": "cf5a198332440e4a16932448104f25c32627f1fc9c2e6becff3d65698d81ca72",
+  "table_size": 4057
+}
