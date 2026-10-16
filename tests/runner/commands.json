@@ -540,6 +540,46 @@
         "AC-051"
       ],
       "scope": "T11 engine: single frozen snapshot per request, full-pipeline capability matrix (literal/t2s/gap/alias/regex/exceptions), global candidate budget, strongest-action decision, bounded 100-witness truncation with hits_truncated, deterministic ordering; service-level snapshot switching belongs to T14/T22."
+    },
+    "t12-http": {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--test",
+        "http_contract"
+      ],
+      "discovery_argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--test",
+        "http_contract",
+        "--",
+        "--list"
+      ],
+      "cwd": ".",
+      "environment_allowlist": [
+        "PATH",
+        "LANG",
+        "LC_ALL",
+        "TZ",
+        "TMPDIR",
+        "HOME",
+        "RUSTUP_HOME",
+        "CARGO_HOME",
+        "CARGO_TARGET_DIR"
+      ],
+      "timeout_seconds": 900,
+      "count_format": "rust",
+      "expected_exit": 0,
+      "acceptance": [
+        "AC-052",
+        "AC-053",
+        "AC-054",
+        "AC-055"
+      ],
+      "scope": "T12 HTTP data plane: strict request parsing (duplicate keys, unknown fields, explicit text, frozen scenes), 256 KiB body bound without decompression, scoped credentials with stable error envelope and unauthenticated health endpoints; gRPC parity is T13 and publish endpoints are T14."
     }
   }
 }
