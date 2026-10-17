@@ -335,7 +335,8 @@ fn ac066_readers_only_see_consistent_revision_generation_digest_triples() {
     let state = Arc::new(store(dir.path()));
     let a_bytes = one_word_ruleset("坏词甲");
     let b_bytes = one_word_ruleset("坏词乙");
-    let mut tag = state.publish(&a_bytes, None).unwrap().revision;
+    let baseline = state.publish(&a_bytes, None).unwrap();
+    let mut tag = baseline.revision.clone();
 
     let stop = Arc::new(AtomicBool::new(false));
     let mut readers = Vec::new();
@@ -359,11 +360,20 @@ fn ac066_readers_only_see_consistent_revision_generation_digest_triples() {
     }
 
     let mut published: HashSet<(String, String)> = HashSet::new();
+    let mut published_generations: HashMap<(String, String), HashSet<String>> = HashMap::new();
+    published_generations
+        .entry((baseline.revision, baseline.digest))
+        .or_default()
+        .insert(baseline.generation.to_string());
     for index in 0..20 {
         let bytes = if index % 2 == 0 { &b_bytes } else { &a_bytes };
         let receipt = state.publish(bytes, Some(&tag)).unwrap();
         tag = receipt.revision.clone();
-        published.insert((receipt.revision, receipt.digest));
+        published.insert((receipt.revision.clone(), receipt.digest.clone()));
+        published_generations
+            .entry((receipt.revision, receipt.digest))
+            .or_default()
+            .insert(receipt.generation.to_string());
     }
     stop.store(true, Ordering::Relaxed);
 
@@ -383,6 +393,15 @@ fn ac066_readers_only_see_consistent_revision_generation_digest_triples() {
             assert!(
                 published.contains(&(revision.clone(), digest.clone())),
                 "unpublished triple: {revision}/{generation}/{digest}"
+            );
+            // generation must pair with its (revision, digest): the publish
+            // loop knows exactly which generation each package got
+            let expected = published_generations
+                .get(&(revision.clone(), digest.clone()))
+                .expect("published pair without generation");
+            assert!(
+                expected.contains(&generation),
+                "mixed generation pair: {revision}/{generation}/{digest}"
             );
             generations.insert(generation);
         }

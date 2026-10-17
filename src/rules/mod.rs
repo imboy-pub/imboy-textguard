@@ -74,12 +74,6 @@
 //! two rulesets (AC-066). At most one store per directory should publish;
 //! cross-process publication into one directory is out of scope for T14.
 
-// The management router's file location is fixed by the T14 task map
-// (src/api/http/manage.rs), but the T12 HTTP module (api/http/mod.rs) is
-// frozen and cannot declare new submodules, and src/lib.rs only gains
-// `pub mod rules;`. The router is therefore compiled as a submodule of
-// `rules` through an explicit #[path]:
-
 mod store;
 
 use crate::api::{CheckCore, InfoResponse};
