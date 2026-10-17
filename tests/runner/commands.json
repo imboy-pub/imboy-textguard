@@ -246,7 +246,29 @@
       ],
       "scope": "Restricted OpenCC single-scalar t2s table: embedded, idempotent, exclusive, version-gated"
     },
-    "t17-runtime": {
+    "t22-fault-publish": {
+   "argv": ["cargo", "test", "--locked", "--features", "fault-injection", "--test", "fault_publish"],
+   "discovery_argv": ["cargo", "test", "--locked", "--features", "fault-injection", "--test", "fault_publish", "--", "--list"],
+   "cwd": ".",
+   "environment_allowlist": ["PATH", "LANG", "LC_ALL", "TZ", "TMPDIR", "HOME", "RUSTUP_HOME", "CARGO_HOME", "CARGO_TARGET_DIR"],
+   "timeout_seconds": 300,
+   "count_format": "rust",
+   "expected_exit": 0,
+   "acceptance": ["AC-067", "AC-068", "AC-070", "AC-071"],
+   "scope": "T22 injected publication faults at every commit boundary (store level): pre-commit Io keeps prior state retryable; post-rename durability fails closed; tampered ACTIVE never recovers by scanning; retired-snapshot busy with bounded retention; 100 successful updates with injections at every boundary"
+  },
+  "t22-fault-process": {
+   "argv": ["cargo", "test", "--locked", "--features", "fault-injection", "--test", "fault_process"],
+   "discovery_argv": ["cargo", "test", "--locked", "--features", "fault-injection", "--test", "fault_process", "--", "--list"],
+   "cwd": ".",
+   "environment_allowlist": ["PATH", "LANG", "LC_ALL", "TZ", "TMPDIR", "HOME", "RUSTUP_HOME", "CARGO_HOME", "CARGO_TARGET_DIR"],
+   "timeout_seconds": 300,
+   "count_format": "rust",
+   "expected_exit": 0,
+   "acceptance": ["AC-068", "AC-069", "AC-070"],
+   "scope": "T22 process-level: real binary SIGKILL at the manifest_dir_sync commit boundary (lost ACK), plain restart recovers the on-disk facts, identical replay returns already_active; clean ACK survives restart; tampered manifest stays NOT READY with an orphan package present"
+  },
+  "t17-runtime": {
       "argv": [
         "cargo",
         "test",

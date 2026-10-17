@@ -2,7 +2,11 @@
 //! A single build lock and bounded retired snapshot protect publication resources.
 //! An unverified ACTIVE or post-rename durability error fails closed until recovery.
 
+#[cfg(feature = "fault-injection")]
+pub mod fault;
 mod store;
+
+pub use store::sha256_hex;
 
 use crate::api::{CheckCore, InfoResponse};
 use crate::engine::{BuildError, Snapshot};
