@@ -9,6 +9,7 @@
 //! digest prefix) coincide and can be cross-asserted.
 
 use imboy_textguard::api::auth::AuthTokens;
+use imboy_textguard::api::http::manage;
 use imboy_textguard::api::CheckCore;
 use imboy_textguard::model::{
     CheckRequest, ErrorCode, GapConfig, LiteralRule, RuleAction, RuleSet, Scene, SceneSemantics,
@@ -16,7 +17,7 @@ use imboy_textguard::model::{
 };
 use imboy_textguard::normalize::table_by_id;
 use imboy_textguard::rules::{
-    manage, PublishError, PublishedCore, RulesState, StoreStatus, MAX_PACKAGE_BYTES,
+    PublishError, PublishedCore, RulesState, StoreStatus, MAX_PACKAGE_BYTES,
 };
 use serde_json::Value;
 use std::collections::{HashMap, HashSet};

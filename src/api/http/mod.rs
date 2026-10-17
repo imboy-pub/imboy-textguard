@@ -38,6 +38,8 @@
 //! admission (semaphores, deadlines) is T19's assembly job; this module only
 //! owns transport parsing, size bounds and credential scope checks.
 
+pub mod manage;
+
 mod error;
 mod handlers;
 mod validate;

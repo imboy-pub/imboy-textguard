@@ -1,13 +1,9 @@
 //! Management (publish) plane: `GET`/`PUT /internal/v1/rulesets/active`
 //! (T14, plan §9).
 //!
-//! File-location note: this file lives under `src/api/http/` per the T14
-//! task map, but the T12 HTTP module (`api/http/mod.rs`) is frozen and
-//! cannot declare new submodules, so it is compiled as
-//! [`crate::rules::manage`] via an explicit `#[path]` include from
-//! `src/rules/mod.rs`. It reuses [`crate::api::auth`] credentials and the
-//! data-plane envelope shape, but keeps its own error mapping because
-//! `api::http::error::ApiError` is private to the frozen T12 module.
+//! It reuses [`crate::api::auth`] credentials and the data-plane envelope
+//! shape, but keeps its own error mapping because
+//! `api::http::error::ApiError` is private to the data-plane module.
 //!
 //! Credential: `authorization` with the **publish** scope (bare token or
 //! `Bearer <token>`). A check-scope credential is PERMISSION_DENIED.

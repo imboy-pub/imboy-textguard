@@ -79,8 +79,6 @@
 // frozen and cannot declare new submodules, and src/lib.rs only gains
 // `pub mod rules;`. The router is therefore compiled as a submodule of
 // `rules` through an explicit #[path]:
-#[path = "../api/http/manage.rs"]
-pub mod manage;
 
 mod store;
 
