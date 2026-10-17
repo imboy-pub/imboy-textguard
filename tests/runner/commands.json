@@ -540,6 +540,46 @@
         "AC-051"
       ],
       "scope": "T11 engine: single frozen snapshot per request, full-pipeline capability matrix (literal/t2s/gap/alias/regex/exceptions), global candidate budget, strongest-action decision, bounded 100-witness truncation with hits_truncated, deterministic ordering; service-level snapshot switching belongs to T14/T22."
+    },
+    "t13-grpc": {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--test",
+        "grpc_contract"
+      ],
+      "discovery_argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--test",
+        "grpc_contract",
+        "--",
+        "--list"
+      ],
+      "cwd": ".",
+      "environment_allowlist": [
+        "PATH",
+        "LANG",
+        "LC_ALL",
+        "TZ",
+        "TMPDIR",
+        "HOME",
+        "RUSTUP_HOME",
+        "CARGO_HOME",
+        "CARGO_TARGET_DIR"
+      ],
+      "timeout_seconds": 900,
+      "count_format": "rust",
+      "expected_exit": 0,
+      "acceptance": [
+        "AC-056",
+        "AC-057",
+        "AC-058",
+        "AC-059"
+      ],
+      "scope": "gRPC data plane component: presence, unknown enums, error-code contract, 256KiB framing limits and grpc-timeout deadline race over an in-process tonic transport; server assembly, TLS and the standard health service remain T17/T19 obligations."
     }
   }
 }
