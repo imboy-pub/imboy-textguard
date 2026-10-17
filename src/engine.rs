@@ -78,9 +78,9 @@ impl Snapshot {
             table,
             semantics: ruleset.semantics_by_scene.clone(),
             metadata: metadata_index(ruleset),
-            revision: digest[..16].to_owned(),
+            revision: digest,
             generation: "0".to_owned(),
-            digest,
+            digest: base_rules_digest(ruleset),
             t2s_table_id: ruleset.t2s_table_id.clone(),
         })
     }
@@ -102,6 +102,12 @@ impl Snapshot {
     /// itself never assigns or interprets it.
     pub fn with_generation(mut self, generation: &str) -> Self {
         self.generation = generation.to_owned();
+        self
+    }
+
+    pub fn with_publication(mut self, revision: &str, generation: u64) -> Self {
+        self.revision = revision.to_owned();
+        self.generation = generation.to_string();
         self
     }
 
@@ -254,6 +260,36 @@ fn metadata_index(ruleset: &RuleSet) -> MetadataIndex {
 fn ruleset_digest(ruleset: &RuleSet) -> String {
     let canonical = serde_json::to_vec(ruleset).expect("ruleset serialization cannot fail");
     format!("{:x}", Sha256::digest(canonical))
+}
+
+pub fn base_rules_digest(ruleset: &RuleSet) -> String {
+    let mut rows: Vec<_> = ruleset
+        .literals
+        .iter()
+        .map(|rule| {
+            let severity = match rule.severity {
+                crate::model::Severity::Low => "low",
+                crate::model::Severity::Medium => "medium",
+                crate::model::Severity::High => "high",
+            };
+            (
+                rule.word.as_bytes(),
+                rule.category.as_bytes(),
+                severity.as_bytes(),
+            )
+        })
+        .collect();
+    rows.sort_unstable();
+    let mut digest = Sha256::new();
+    digest.update(b"TGBASEv1\0");
+    digest.update((rows.len() as u32).to_be_bytes());
+    for (word, category, severity) in rows {
+        for field in [word, category, severity] {
+            digest.update((field.len() as u32).to_be_bytes());
+            digest.update(field);
+        }
+    }
+    format!("{:x}", digest.finalize())
 }
 
 fn normalization_error(error: base::NormalizationError) -> ErrorCode {

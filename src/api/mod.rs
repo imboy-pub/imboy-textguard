@@ -34,8 +34,7 @@ pub trait CheckCore: Send + Sync {
 
     /// Deadline for one check: admission + core scan included (plan 5).
     fn check_deadline(&self, requested: Option<Instant>) -> Instant {
-        requested
-            .unwrap_or_else(Instant::now)
-            .min(Instant::now() + crate::runtime::CHECK_BUDGET)
+        let default = Instant::now() + crate::runtime::CHECK_BUDGET;
+        requested.unwrap_or(default).min(default)
     }
 }

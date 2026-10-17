@@ -55,7 +55,9 @@ async fn run_check(state: &HttpState, request: Request) -> Response {
     };
     match state.core.check(&parsed) {
         Ok(response) => (StatusCode::OK, Json(response)).into_response(),
-        Err(code) => ApiError::new(code).into_response(),
+        Err(code) => ApiError::new(code)
+            .for_request(&parsed.request_id)
+            .into_response(),
     }
 }
 

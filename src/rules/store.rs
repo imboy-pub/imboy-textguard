@@ -1,30 +1,14 @@
-//! On-disk publication store (T14, plan §9): directory layout, durability
-//! helpers and fail-closed recovery.
-//!
-//! Layout under the configurable root:
-//!
-//! ```text
-//! <root>/packages/<sha256-of-published-bytes>.json   immutable, content-addressed
-//! <root>/manifest.json                               ACTIVE pointer (single authority)
-//! <root>/tmp/                                        staging for package/manifest writes
-//! ```
-//!
-//! Durability protocol: every file is staged in `tmp/`, written with
-//! `File::sync_all`, renamed into place, and the containing directory is
-//! fsynced after each rename. Directory fsync is best-effort where the
-//! platform rejects it (macOS directory fds fail the `fsync` with the
-//! EINVAL/EOPNOTSUPP errno family); those errnos are skipped and that gap
-//! is exactly what T22 re-verifies on Linux with fault injection. A real
-//! (non-unsupported) directory-fsync failure after the manifest rename is
-//! reported as [`ManifestError::PostRenameDurability`] so the caller can
-//! answer honestly with "unknown", never "not published".
+//! Local publication storage: bounded files, fsync, atomic rename and verified recovery.
+//! The ACTIVE manifest is authoritative; orphan packages never become active.
 
 use serde::{Deserialize, Serialize};
 use sha2::Digest as _;
 use sha2::Sha256;
-use std::fs::{self, File};
-use std::io::{self, Write};
+use std::fs::{self, File, OpenOptions};
+use std::io::{self, Read, Write};
+use std::os::unix::fs::OpenOptionsExt;
 use std::path::{Path, PathBuf};
+#[cfg(test)]
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -63,8 +47,7 @@ pub(crate) enum ManifestError {
 /// Outcome of [`load_active`].
 #[derive(Debug)]
 pub(crate) enum LoadOutcome {
-    /// No ACTIVE manifest: the store starts not ready and accepts an
-    /// initial publish without `If-Match`.
+    /// No ACTIVE manifest: the store starts not ready with a queryable empty ETag.
     Empty,
     /// Manifest and package both verified against each other.
     Active { manifest: Manifest, bytes: Vec<u8> },
@@ -73,23 +56,90 @@ pub(crate) enum LoadOutcome {
     Corrupt(String),
 }
 
-/// Errnos returned by platforms that cannot fsync a directory fd; these
-/// are treated as best-effort skips (documented gap; T22 re-verifies on
-/// Linux). EBADF=9, EINVAL=22 (macOS), EOPNOTSUPP=45 (macOS)/95 (Linux),
-/// ENOSYS=78.
-const UNSUPPORTED_DIR_FSYNC: &[i32] = &[9, 22, 45, 78, 95];
-
 pub(crate) fn ensure_layout(root: &Path) -> io::Result<()> {
+    for ancestor in root.ancestors() {
+        if fs::symlink_metadata(ancestor).is_ok_and(|metadata| metadata.file_type().is_symlink()) {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "publication directory contains a symlink",
+            ));
+        }
+    }
     fs::create_dir_all(root.join(PACKAGE_DIR))?;
     fs::create_dir_all(root.join(TMP_DIR))?;
+    for name in [PACKAGE_DIR, TMP_DIR] {
+        if fs::symlink_metadata(root.join(name))?
+            .file_type()
+            .is_symlink()
+        {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "publication directory contains a symlink",
+            ));
+        }
+    }
     Ok(())
+}
+
+pub(crate) fn load_or_create_instance(root: &Path) -> io::Result<String> {
+    let path = root.join("instance-id");
+    match fs::symlink_metadata(&path) {
+        Ok(metadata) => {
+            if !metadata.is_file() || metadata.file_type().is_symlink() || metadata.len() > 64 {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "invalid instance identity",
+                ));
+            }
+            let identity = fs::read_to_string(&path)?;
+            if identity.len() < 24 || !identity.bytes().all(|byte| byte.is_ascii_hexdigit()) {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "invalid instance identity",
+                ));
+            }
+            return Ok(identity);
+        }
+        Err(error) if error.kind() == io::ErrorKind::NotFound => {}
+        Err(error) => return Err(error),
+    }
+    if has_history(root)? {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "instance identity missing from a historical store",
+        ));
+    }
+    let mut random = [0u8; 16];
+    File::open("/dev/urandom")?.read_exact(&mut random)?;
+    let identity: String = random.iter().map(|byte| format!("{byte:02x}")).collect();
+    let mut file = OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .mode(0o600)
+        .open(path)?;
+    file.write_all(identity.as_bytes())?;
+    file.sync_all()?;
+    sync_dir(root)?;
+    Ok(identity)
 }
 
 /// Read and verify the ACTIVE pointer plus its package.
 pub(crate) fn load_active(root: &Path) -> LoadOutcome {
     let manifest_path = root.join(MANIFEST_FILE);
-    if !manifest_path.is_file() {
-        return LoadOutcome::Empty;
+    match fs::symlink_metadata(&manifest_path) {
+        Err(error) if error.kind() == io::ErrorKind::NotFound => {
+            return match has_history(root) {
+                Ok(false) => LoadOutcome::Empty,
+                _ => LoadOutcome::Corrupt(
+                    "ACTIVE missing from a historical or unverifiable store".to_owned(),
+                ),
+            };
+        }
+        Ok(metadata)
+            if metadata.is_file()
+                && !metadata.file_type().is_symlink()
+                && metadata.len() <= 4096 => {}
+        _ => return LoadOutcome::Corrupt("ACTIVE is not a regular bounded file".to_owned()),
     }
     let raw = match fs::read(&manifest_path) {
         Ok(raw) => raw,
@@ -111,6 +161,15 @@ pub(crate) fn load_active(root: &Path) -> LoadOutcome {
     let package_path = root
         .join(PACKAGE_DIR)
         .join(format!("{}.json", manifest.package_digest));
+    match fs::symlink_metadata(&package_path) {
+        Ok(metadata)
+            if metadata.is_file()
+                && !metadata.file_type().is_symlink()
+                && metadata.len() <= super::MAX_PACKAGE_BYTES as u64 => {}
+        _ => {
+            return LoadOutcome::Corrupt("active package is not a regular bounded file".to_owned())
+        }
+    }
     let bytes = match fs::read(&package_path) {
         Ok(bytes) => bytes,
         Err(error) => return LoadOutcome::Corrupt(format!("active package unreadable: {error}")),
@@ -128,6 +187,23 @@ pub(crate) fn write_package(root: &Path, digest: &str, bytes: &[u8]) -> io::Resu
     let packages = root.join(PACKAGE_DIR);
     fs::create_dir_all(&packages)?;
     let target = packages.join(format!("{digest}.json"));
+    match fs::symlink_metadata(&target) {
+        Ok(metadata) => {
+            if !metadata.is_file()
+                || metadata.file_type().is_symlink()
+                || metadata.len() != bytes.len() as u64
+                || fs::read(&target)? != bytes
+            {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "existing package differs from its content identity",
+                ));
+            }
+            return sync_dir(&packages);
+        }
+        Err(error) if error.kind() == io::ErrorKind::NotFound => {}
+        Err(error) => return Err(error),
+    }
     let staged = stage(root, &format!("pkg-{digest}"), bytes)?;
     if let Err(error) = fs::rename(&staged, &target) {
         let _ = fs::remove_file(&staged);
@@ -139,6 +215,7 @@ pub(crate) fn write_package(root: &Path, digest: &str, bytes: &[u8]) -> io::Resu
 /// Replace the ACTIVE manifest: stage, fsync, rename over `manifest.json`.
 /// See [`ManifestError`] for the pre/post-rename failure split.
 pub(crate) fn write_manifest(root: &Path, manifest: &Manifest) -> Result<(), ManifestError> {
+    mark_history(root).map_err(ManifestError::Pre)?;
     let bytes = serde_json::to_vec_pretty(manifest).expect("manifest serialization cannot fail");
     let staged = stage(root, "manifest", &bytes).map_err(ManifestError::Pre)?;
     let target = root.join(MANIFEST_FILE);
@@ -173,28 +250,87 @@ pub(crate) fn cleanup_packages(root: &Path, keep: &[&str]) {
     }
 }
 
+fn has_history(root: &Path) -> io::Result<bool> {
+    for name in [MANIFEST_FILE, "publication-history"] {
+        match fs::symlink_metadata(root.join(name)) {
+            Ok(_) => return Ok(true),
+            Err(error) if error.kind() == io::ErrorKind::NotFound => {}
+            Err(error) => return Err(error),
+        }
+    }
+    for name in [PACKAGE_DIR, TMP_DIR] {
+        if fs::read_dir(root.join(name))?.next().transpose()?.is_some() {
+            return Ok(true);
+        }
+    }
+    Ok(false)
+}
+
+pub(crate) fn mark_history(root: &Path) -> io::Result<()> {
+    let path = root.join("publication-history");
+    match fs::symlink_metadata(&path) {
+        Ok(metadata)
+            if metadata.is_file()
+                && !metadata.file_type().is_symlink()
+                && metadata.len() == 2
+                && fs::read(&path)? == b"1\n" =>
+        {
+            return sync_dir(root)
+        }
+        Ok(_) => {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "invalid publication history marker",
+            ))
+        }
+        Err(error) if error.kind() == io::ErrorKind::NotFound => {}
+        Err(error) => return Err(error),
+    }
+    let mut file = OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .mode(0o600)
+        .open(&path)?;
+    if let Err(error) = file.write_all(b"1\n").and_then(|()| file.sync_all()) {
+        drop(file);
+        fs::remove_file(path)?;
+        return Err(error);
+    }
+    sync_dir(root)
+}
+
 fn stage(root: &Path, tag: &str, bytes: &[u8]) -> io::Result<PathBuf> {
+    stage_file(root, tag, |file| {
+        file.write_all(bytes)?;
+        file.sync_all()
+    })
+}
+
+fn stage_file(
+    root: &Path,
+    tag: &str,
+    write: impl FnOnce(&mut File) -> io::Result<()>,
+) -> io::Result<PathBuf> {
     let tmp_dir = root.join(TMP_DIR);
     fs::create_dir_all(&tmp_dir)?;
     // one publishing store per directory per process; the pid still keeps
     // the name distinct if operators ever share a root by mistake
     let path = tmp_dir.join(format!("{tag}-{}.stage", std::process::id()));
-    let mut file = File::create(&path)?;
-    file.write_all(bytes)?;
-    file.sync_all()?;
+    let mut file = OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .mode(0o600)
+        .open(&path)?;
+    if let Err(error) = write(&mut file) {
+        drop(file);
+        fs::remove_file(&path)?;
+        return Err(error);
+    }
     Ok(path)
 }
 
 fn sync_dir(path: &Path) -> io::Result<()> {
-    let failure = match File::open(path).and_then(|directory| directory.sync_all()) {
-        Ok(()) => return Ok(()),
-        Err(error) => error,
-    };
-    if UNSUPPORTED_DIR_FSYNC.contains(&failure.raw_os_error().unwrap_or(0)) {
-        Ok(())
-    } else {
-        Err(failure)
-    }
+    File::open(path)?.sync_all()
 }
 
 fn is_sha256_hex(value: &str) -> bool {
@@ -207,6 +343,7 @@ pub(crate) fn sha256_hex(bytes: &[u8]) -> String {
 
 /// Fresh per-process instance id (no new dependencies): publish-time
 /// nanoseconds, the pid and a process-local counter in hex.
+#[cfg(test)]
 pub(crate) fn fresh_instance_id() -> String {
     static COUNTER: AtomicU64 = AtomicU64::new(0);
     let nanos = SystemTime::now()
@@ -311,7 +448,8 @@ mod tests {
             std::process::id(),
             fresh_instance_id()
         ));
-        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&root).unwrap();
+        let root = root.canonicalize().unwrap();
         ensure_layout(&root).unwrap();
         assert!(matches!(load_active(&root), LoadOutcome::Empty));
 
@@ -359,5 +497,26 @@ mod tests {
         assert!(matches!(load_active(&root), LoadOutcome::Corrupt(_)));
 
         let _ = fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn failed_stage_write_or_sync_is_removed_before_same_process_retry() {
+        let root = std::env::temp_dir()
+            .canonicalize()
+            .unwrap()
+            .join(format!("textguard-stage-{}", fresh_instance_id()));
+        ensure_layout(&root).unwrap();
+        for kind in [io::ErrorKind::StorageFull, io::ErrorKind::Other] {
+            let result = stage_file(&root, "manifest", |file| {
+                file.write_all(b"partial")?;
+                Err(io::Error::new(kind, "injected write or sync failure"))
+            });
+            assert_eq!(result.unwrap_err().kind(), kind);
+            assert_eq!(fs::read_dir(root.join(TMP_DIR)).unwrap().count(), 0);
+            let staged = stage(&root, "manifest", b"complete").unwrap();
+            assert_eq!(fs::read(&staged).unwrap(), b"complete");
+            fs::remove_file(staged).unwrap();
+        }
+        fs::remove_dir_all(root).unwrap();
     }
 }

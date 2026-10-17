@@ -222,7 +222,7 @@ fn authorized_request(
 fn error_code_of(status: &tonic::Status) -> String {
     status
         .metadata()
-        .get("textguard-error-code")
+        .get("x-textguard-error-code")
         .and_then(|value| value.to_str().ok())
         .unwrap_or_default()
         .to_owned()

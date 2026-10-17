@@ -1,50 +1,6 @@
-//! Management (publish) plane: `GET`/`PUT /internal/v1/rulesets/active`
-//! (T14, plan §9).
-//!
-//! It reuses [`crate::api::auth`] credentials and the data-plane envelope
-//! shape, but keeps its own error mapping because
-//! `api::http::error::ApiError` is private to the data-plane module.
-//!
-//! Credential: `authorization` with the **publish** scope (bare token or
-//! `Bearer <token>`). A check-scope credential is PERMISSION_DENIED.
-//!
-//! `PUT` publishes a ruleset package (exact bytes are stored):
-//!
-//! * bodies over [`MAX_PACKAGE_BYTES`] (64 MiB) are rejected up front via
-//!   `Content-Length` and again by a bounded body read; any
-//!   `Content-Encoding` other than absent/`identity` is a protocol error
-//! * `If-Match` carries the CAS token (the revision/ETag of the current
-//!   active ruleset); it may be omitted only for the initial publish into
-//!   a store with no active ruleset — an omitted header while a ruleset is
-//!   active answers **428 Precondition Required**, a mismatched token
-//!   **409 Conflict** (both carry the machine code `CAS_CONFLICT`); the
-//!   token may be quoted or bare; `*` and duplicated headers are
-//!   `INVALID_ARGUMENT`
-//! * republishing identical bytes while already active returns
-//!   `already_active = true` with the generation unchanged
-//!
-//! `GET` returns the active pointer: revision, generation, digest,
-//! instance_id, canonical/alias/regex counts, timestamps and
-//! `base_rules_digest`; the `ETag` response header is the (quoted)
-//! revision on both endpoints.
-//!
-//! Status mapping (management plane):
-//!
-//! | Condition                              | Status |
-//! |----------------------------------------|--------|
-//! | `UNAUTHENTICATED`                      | 401    |
-//! | `PERMISSION_DENIED`                    | 403    |
-//! | `INVALID_ARGUMENT`, `INVALID_UTF8`, `PROTOCOL_ERROR`, `INVALID_RULESET`, `UNSUPPORTED_RULESET` | 400 |
-//! | `TEXT_TOO_LARGE`                       | 413    |
-//! | `NOT_READY`, `PUBLISH_BUSY`            | 503    |
-//! | `CAS_CONFLICT` with no `If-Match`      | 428    |
-//! | `CAS_CONFLICT` with a mismatched token | 409    |
-//! | everything else (`INTERNAL_ERROR`, `PUBLISH_STATE_UNKNOWN`, ...) | 500 |
-//!
-//! A `PUBLISH_STATE_UNKNOWN` response means the manifest was renamed but
-//! its directory fsync failed: the publication may or may not be durable
-//! — re-check with `GET`; never assume "not published" (AC-068 semantics,
-//! full injection in T22).
+//! Authenticated management HTTP, using the frozen publication-state Schema.
+//! ETag binds instance, generation and revision; every PUT supplies If-Match.
+//! Publish work remains locked if the caller times out; query state before retrying.
 
 use crate::api::auth::{AuthTokens, Scope};
 use crate::model::ErrorCode;
@@ -67,6 +23,7 @@ const ACTIVE_PATH: &str = "/internal/v1/rulesets/active";
 struct ManageState {
     state: Arc<RulesState>,
     tokens: Arc<AuthTokens>,
+    receiving: Arc<tokio::sync::Semaphore>,
 }
 
 /// Build the management router for assembly by `main` / T19. Mount it on
@@ -79,35 +36,38 @@ pub fn router(state: Arc<RulesState>, tokens: Arc<AuthTokens>) -> axum::Router {
                 .put(put_active)
                 .layer(DefaultBodyLimit::max(MAX_PACKAGE_BYTES)),
         )
-        .with_state(ManageState { state, tokens })
+        .with_state(ManageState {
+            state,
+            tokens,
+            receiving: Arc::new(tokio::sync::Semaphore::new(1)),
+        })
 }
 
 async fn get_active(State(state): State<ManageState>, headers: HeaderMap) -> Response {
     if let Err(error) = authorize(&state.tokens, &headers) {
         return error_response(error, false);
     }
-    let Some(active) = state.state.current() else {
-        return error_response(ErrorCode::NotReady, false);
+    let (active, etag) = match state.state.active_state() {
+        Ok(value) => value,
+        Err(error) => return publish_error_response(&error, false),
     };
-    let body = json!({
-        "ready": true,
-        "schema_version": crate::rules::MANIFEST_SCHEMA_VERSION,
-        "revision": active.revision(),
-        "generation": active.generation(),
-        "digest": active.digest(),
-        "base_rules_digest": active.snapshot().digest(),
-        "instance_id": state.state.instance_id(),
-        "published_by": active.published_by(),
-        "canonical_count": active.counts().canonical,
-        "alias_count": active.counts().alias,
-        "regex_count": active.counts().regex,
-        "updated_at_unix": active.updated_at_unix(),
-        "updated_at_rfc3339": active.updated_at_rfc3339(),
-    });
-    with_etag(StatusCode::OK, active.revision(), body)
+    let body = publication_body(
+        state.state.instance_id(),
+        active.as_ref().map_or(0, |value| value.generation()),
+        active.as_ref().map_or("", |value| value.revision()),
+        &etag,
+        if active.is_some() {
+            "active"
+        } else {
+            "uninitialized"
+        },
+        active.as_ref().map_or([0; 3], |value| value.scene_counts()),
+    );
+    with_etag(StatusCode::OK, &etag, body)
 }
 
 async fn put_active(State(state): State<ManageState>, request: Request) -> Response {
+    let deadline = tokio::time::Instant::now() + std::time::Duration::from_secs(60);
     if let Err(error) = authorize(&state.tokens, request.headers()) {
         return error_response(error, false);
     }
@@ -118,9 +78,25 @@ async fn put_active(State(state): State<ManageState>, request: Request) -> Respo
         Ok(if_match) => if_match,
         Err(error) => return error_response(error, false),
     };
-    let bytes = match to_bytes(request.into_body(), MAX_PACKAGE_BYTES).await {
-        Ok(bytes) => bytes,
-        Err(error) => {
+    if if_match.is_none() {
+        return error_response(ErrorCode::CasConflict, true);
+    }
+    let permit = match state.receiving.try_acquire_owned() {
+        Ok(permit) => permit,
+        Err(_) => return error_response(ErrorCode::PublishBusy, false),
+    };
+    let confirmed_empty = request
+        .headers()
+        .get("x-textguard-confirm-empty")
+        .is_some_and(|value| value == "true");
+    let bytes = match tokio::time::timeout(
+        std::time::Duration::from_secs(30),
+        to_bytes(request.into_body(), MAX_PACKAGE_BYTES),
+    )
+    .await
+    {
+        Ok(Ok(bytes)) => bytes,
+        Ok(Err(error)) => {
             let code = if error.to_string() == LENGTH_LIMIT_MESSAGE {
                 ErrorCode::TextTooLarge
             } else {
@@ -128,20 +104,58 @@ async fn put_active(State(state): State<ManageState>, request: Request) -> Respo
             };
             return error_response(code, false);
         }
+        Err(_) => return error_response(ErrorCode::PublishDeadline, false),
     };
-    match state.state.publish(&bytes, if_match.as_deref()) {
-        Ok(receipt) => {
-            let body = json!({
-                "revision": receipt.revision,
-                "generation": receipt.generation,
-                "digest": receipt.digest,
-                "instance_id": receipt.instance_id,
-                "already_active": receipt.already_active,
-            });
-            with_etag(StatusCode::OK, &receipt.revision, body)
-        }
-        Err(error) => publish_error_response(&error, if_match.is_none()),
+    if serde_json::from_slice::<Value>(&bytes).is_ok_and(|value| {
+        value
+            .get("literals")
+            .and_then(Value::as_array)
+            .is_some_and(Vec::is_empty)
+            && value
+                .get("regex_rules")
+                .and_then(Value::as_array)
+                .is_some_and(Vec::is_empty)
+    }) && !confirmed_empty
+    {
+        return error_response(ErrorCode::InvalidRuleset, false);
     }
+    let publication = tokio::task::spawn_blocking(move || {
+        let _permit = permit;
+        state.state.publish(&bytes, if_match.as_deref())
+    });
+    match tokio::time::timeout_at(deadline, publication).await {
+        Ok(Ok(Ok(receipt))) => {
+            let body = publication_body(
+                &receipt.instance_id,
+                receipt.generation,
+                &receipt.revision,
+                &receipt.state_etag,
+                if receipt.already_active {
+                    "already_active"
+                } else {
+                    "committed"
+                },
+                receipt.scene_counts,
+            );
+            with_etag(StatusCode::OK, &receipt.state_etag, body)
+        }
+        Ok(Ok(Err(error))) => publish_error_response(&error, false),
+        Ok(Err(_)) => error_response(ErrorCode::InternalError, false),
+        Err(_) => error_response(ErrorCode::PublishDeadline, false),
+    }
+}
+
+fn publication_body(
+    instance: &str,
+    generation: u64,
+    revision: &str,
+    etag: &str,
+    status: &str,
+    counts: [usize; 3],
+) -> Value {
+    json!({"instance_id": instance, "ready": generation > 0, "generation": generation.to_string(),
+        "ruleset_revision": revision, "state_etag": etag, "status": status,
+        "scene_counts": {"channel_message": counts[0], "moment_post": counts[1], "profile_field": counts[2]}})
 }
 
 /// Verify exactly one publish-scope credential; bare token or Bearer form.
@@ -209,17 +223,11 @@ fn if_match_token(headers: &HeaderMap) -> Result<Option<String>, ErrorCode> {
 
 fn publish_error_response(error: &PublishError, precondition_missing: bool) -> Response {
     let code = error.error_code();
-    let message = match error {
-        PublishError::UnknownState(_) => {
-            // honest guidance for the unknown-durability outcome
-            "publication durability is unknown: the manifest was replaced but its fsync failed; re-check the active state with GET before retrying"
-        }
-        _ => message_for(code),
-    };
     let body = json!({
         "error": {
             "code": code,
-            "message": message,
+            "request_id": "",
+            "retryable": super::error::retryable(code),
         }
     });
     (status_for(code, precondition_missing), Json(body)).into_response()
@@ -229,14 +237,15 @@ fn error_response(code: ErrorCode, precondition_missing: bool) -> Response {
     let body = json!({
         "error": {
             "code": code,
-            "message": message_for(code),
+            "request_id": "",
+            "retryable": super::error::retryable(code),
         }
     });
     (status_for(code, precondition_missing), Json(body)).into_response()
 }
 
 /// Management-plane status table; see the module documentation.
-fn status_for(code: ErrorCode, precondition_missing: bool) -> StatusCode {
+fn status_for(code: ErrorCode, _precondition_missing: bool) -> StatusCode {
     match code {
         ErrorCode::Unauthenticated => StatusCode::UNAUTHORIZED,
         ErrorCode::PermissionDenied => StatusCode::FORBIDDEN,
@@ -246,29 +255,11 @@ fn status_for(code: ErrorCode, precondition_missing: bool) -> StatusCode {
         | ErrorCode::ProtocolError
         | ErrorCode::InvalidRuleset
         | ErrorCode::UnsupportedRuleset => StatusCode::BAD_REQUEST,
-        ErrorCode::NotReady | ErrorCode::PublishBusy => StatusCode::SERVICE_UNAVAILABLE,
-        ErrorCode::CasConflict if precondition_missing => StatusCode::PRECONDITION_REQUIRED,
-        ErrorCode::CasConflict => StatusCode::CONFLICT,
+        ErrorCode::NotReady => StatusCode::SERVICE_UNAVAILABLE,
+        ErrorCode::PublishBusy | ErrorCode::RetiredSnapshotBusy => StatusCode::CONFLICT,
+        ErrorCode::CasConflict => StatusCode::PRECONDITION_FAILED,
+        ErrorCode::PublishDeadline => StatusCode::GATEWAY_TIMEOUT,
         _ => StatusCode::INTERNAL_SERVER_ERROR,
-    }
-}
-
-fn message_for(code: ErrorCode) -> &'static str {
-    match code {
-        ErrorCode::Unauthenticated => "missing or unknown credential",
-        ErrorCode::PermissionDenied => "credential is not authorized for this operation",
-        ErrorCode::ProtocolError => "request violates the transport protocol contract",
-        ErrorCode::TextTooLarge => "request body exceeds the accepted size limit",
-        ErrorCode::InvalidArgument => "request violates the publish request contract",
-        ErrorCode::InvalidUtf8 => "request body is not valid UTF-8",
-        ErrorCode::InvalidRuleset => "ruleset failed validation",
-        ErrorCode::UnsupportedRuleset => "ruleset schema or table is not supported",
-        ErrorCode::NotReady => "no active ruleset is loaded",
-        ErrorCode::PublishBusy => "another publication is in progress",
-        ErrorCode::CasConflict => "If-Match does not match the active ruleset revision",
-        ErrorCode::PublishStateUnknown => "publication durability is unknown",
-        ErrorCode::InternalError => "internal error",
-        _ => "internal error",
     }
 }
 
@@ -317,15 +308,15 @@ mod tests {
     fn management_status_table_splits_cas_failure_kinds() {
         assert_eq!(
             status_for(ErrorCode::CasConflict, true),
-            StatusCode::PRECONDITION_REQUIRED
+            StatusCode::PRECONDITION_FAILED
         );
         assert_eq!(
             status_for(ErrorCode::CasConflict, false),
-            StatusCode::CONFLICT
+            StatusCode::PRECONDITION_FAILED
         );
         assert_eq!(
             status_for(ErrorCode::PublishBusy, false),
-            StatusCode::SERVICE_UNAVAILABLE
+            StatusCode::CONFLICT
         );
         assert_eq!(
             status_for(ErrorCode::InvalidRuleset, false),

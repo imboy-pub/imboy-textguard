@@ -626,15 +626,21 @@
         "cargo",
         "test",
         "--locked",
+        "--lib",
         "--test",
-        "rules_publish"
+        "rules_publish",
+        "--test",
+        "publish_identity"
       ],
       "discovery_argv": [
         "cargo",
         "test",
         "--locked",
+        "--lib",
         "--test",
         "rules_publish",
+        "--test",
+        "publish_identity",
         "--",
         "--list"
       ],
