@@ -167,7 +167,7 @@ class Capacity(unittest.TestCase):
                     "secret_file": "/perf/check", "seconds": 600, "qps": 500,
                     "concurrency": 64, "arrival": "open"}
             base.update(fields)
-            type(cls).job_seconds[name] = base["seconds"]
+            cls.job_seconds[name] = base["seconds"]
             (jobs / (name + ".json")).write_text(json.dumps(base))
 
         for profile in ["B0", "B1"]:
