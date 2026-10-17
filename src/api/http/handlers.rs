@@ -66,20 +66,29 @@ pub(super) async fn info_handler(State(state): State<HttpState>, headers: Header
         return error.into_response();
     }
     let info = state.core.info();
-    let body = json!({
+    let mut body = json!({
         "instance_id": info.instance_id,
         "ready": info.ready,
         "build_id": info.build_id,
-        "ruleset_revision": info.ruleset_revision,
-        "generation": info.generation,
-        "normalization_id": info.normalization_id,
-        "t2s_table_id": info.t2s_table_id,
-        "base_rules_digest": info.base_rules_digest,
-        "canonical_count": info.canonical_count,
-        "alias_count": info.alias_count,
-        "regex_count": info.regex_count,
         "supported_semantics": info.supported_semantics,
     });
+    if info.ready {
+        body.as_object_mut().unwrap().extend(
+            json!({
+                "ruleset_revision": info.ruleset_revision,
+                "generation": info.generation,
+                "normalization_id": info.normalization_id,
+                "t2s_table_id": info.t2s_table_id,
+                "base_rules_digest": info.base_rules_digest,
+                "canonical_count": info.canonical_count,
+                "alias_count": info.alias_count,
+                "regex_count": info.regex_count,
+            })
+            .as_object()
+            .unwrap()
+            .clone(),
+        );
+    }
     (StatusCode::OK, Json(body)).into_response()
 }
 

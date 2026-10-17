@@ -65,6 +65,53 @@ fn first_publish_requires_the_observed_empty_state_token() {
         .unwrap();
 }
 
+#[tokio::test]
+async fn unpublished_info_omits_snapshot_fields_on_both_transports() {
+    use axum::body::{to_bytes, Body};
+    use axum::http::Request;
+    use imboy_textguard::api::auth::AuthTokens;
+    use imboy_textguard::api::grpc::TextGuardSvc;
+    use imboy_textguard::protocol::text_guard_server::TextGuard as _;
+    use imboy_textguard::rules::PublishedCore;
+    use std::sync::Arc;
+    use tonic::codegen::Service as _;
+
+    let directory = Directory::new();
+    let core = Arc::new(PublishedCore::new(Arc::new(directory.open())));
+    let tokens = Arc::new(AuthTokens::new("presence-check", "presence-publish"));
+    let mut http = imboy_textguard::api::http::router(core.clone(), tokens.clone());
+    let request = Request::get("/v1/info")
+        .header("authorization", "presence-check")
+        .body(Body::empty())
+        .unwrap();
+    let response = http.call(request).await.unwrap();
+    assert_eq!(response.status(), 200);
+    let body = to_bytes(response.into_body(), 256 * 1024).await.unwrap();
+    let info: Value = serde_json::from_slice(&body).unwrap();
+    assert_eq!(info["ready"], false);
+    assert_eq!(info.as_object().unwrap().len(), 4);
+
+    let mut request = tonic::Request::new(imboy_textguard::protocol::GetInfoRequest {});
+    request
+        .metadata_mut()
+        .insert("authorization", "presence-check".parse().unwrap());
+    let info = TextGuardSvc::new(core, tokens)
+        .get_info(request)
+        .await
+        .unwrap()
+        .into_inner();
+    assert_eq!(info.ready, Some(false));
+    assert!(!info.instance_id.unwrap().is_empty());
+    assert_eq!(info.ruleset_revision, None);
+    assert_eq!(info.generation, None);
+    assert_eq!(info.normalization_id, None);
+    assert_eq!(info.t2s_table_id, None);
+    assert_eq!(info.base_rules_digest, None);
+    assert_eq!(info.canonical_count, None);
+    assert_eq!(info.alias_count, None);
+    assert_eq!(info.regex_count, None);
+}
+
 #[test]
 fn lost_ack_retries_the_identical_package_without_a_new_generation() {
     let directory = Directory::new();
