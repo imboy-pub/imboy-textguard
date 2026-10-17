@@ -321,7 +321,7 @@ async fn unknown_content_encoding_is_rejected_and_identity_accepted() {
         .body(Body::from(valid_body()))
         .unwrap();
     let (status, value) = send(fixture.router.clone(), gzip).await;
-    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert_eq!(status, StatusCode::BAD_GATEWAY);
     assert_eq!(error_code(&value), "PROTOCOL_ERROR");
     assert!(fixture.core.seen.lock().unwrap().is_empty());
 
@@ -429,7 +429,7 @@ async fn core_errors_map_to_the_documented_status_table() {
         ),
         (
             ErrorCode::Overloaded,
-            StatusCode::SERVICE_UNAVAILABLE,
+            StatusCode::TOO_MANY_REQUESTS,
             "OVERLOADED",
         ),
         (
@@ -444,13 +444,38 @@ async fn core_errors_map_to_the_documented_status_table() {
         ),
         (
             ErrorCode::MatchBudgetExceeded,
-            StatusCode::PAYLOAD_TOO_LARGE,
+            StatusCode::UNPROCESSABLE_ENTITY,
             "MATCH_BUDGET_EXCEEDED",
         ),
         (
             ErrorCode::NormalizationLimit,
-            StatusCode::PAYLOAD_TOO_LARGE,
+            StatusCode::UNPROCESSABLE_ENTITY,
             "NORMALIZATION_LIMIT",
+        ),
+        (
+            ErrorCode::ConnectionFailed,
+            StatusCode::SERVICE_UNAVAILABLE,
+            "CONNECTION_FAILED",
+        ),
+        (
+            ErrorCode::UnsupportedRuleset,
+            StatusCode::SERVICE_UNAVAILABLE,
+            "UNSUPPORTED_RULESET",
+        ),
+        (
+            ErrorCode::ProtocolError,
+            StatusCode::BAD_GATEWAY,
+            "PROTOCOL_ERROR",
+        ),
+        (
+            ErrorCode::NormalizerIncompatible,
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "NORMALIZER_INCOMPATIBLE",
+        ),
+        (
+            ErrorCode::InternalError,
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "INTERNAL_ERROR",
         ),
     ] {
         let fixture = fixture_with(Some(error), true);

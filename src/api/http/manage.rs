@@ -247,19 +247,11 @@ fn error_response(code: ErrorCode, precondition_missing: bool) -> Response {
 /// Management-plane status table; see the module documentation.
 fn status_for(code: ErrorCode, _precondition_missing: bool) -> StatusCode {
     match code {
-        ErrorCode::Unauthenticated => StatusCode::UNAUTHORIZED,
-        ErrorCode::PermissionDenied => StatusCode::FORBIDDEN,
-        ErrorCode::TextTooLarge => StatusCode::PAYLOAD_TOO_LARGE,
-        ErrorCode::InvalidArgument
-        | ErrorCode::InvalidUtf8
-        | ErrorCode::ProtocolError
-        | ErrorCode::InvalidRuleset
-        | ErrorCode::UnsupportedRuleset => StatusCode::BAD_REQUEST,
-        ErrorCode::NotReady => StatusCode::SERVICE_UNAVAILABLE,
+        ErrorCode::InvalidRuleset => StatusCode::BAD_REQUEST,
         ErrorCode::PublishBusy | ErrorCode::RetiredSnapshotBusy => StatusCode::CONFLICT,
         ErrorCode::CasConflict => StatusCode::PRECONDITION_FAILED,
         ErrorCode::PublishDeadline => StatusCode::GATEWAY_TIMEOUT,
-        _ => StatusCode::INTERNAL_SERVER_ERROR,
+        _ => super::error::status_for(code),
     }
 }
 

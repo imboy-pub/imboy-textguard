@@ -46,7 +46,8 @@
 //!
 //! | model::ErrorCode | tonic Code |
 //! |---|---|
-//! | `InvalidArgument`, `InvalidUtf8`, `ProtocolError` | `INVALID_ARGUMENT` |
+//! | `InvalidArgument`, `InvalidUtf8` | `INVALID_ARGUMENT` |
+//! | `ProtocolError` | `DATA_LOSS` |
 //! | `TextTooLarge`, `NormalizationLimit`, `MatchBudgetExceeded`, `Overloaded` | `RESOURCE_EXHAUSTED` |
 //! | `Unauthenticated` | `UNAUTHENTICATED` |
 //! | `PermissionDenied` | `PERMISSION_DENIED` |
@@ -357,9 +358,8 @@ fn status_from_error(code: ErrorCode) -> Status {
 fn status_for_request(code: ErrorCode, request_id: &str) -> Status {
     let name = error_code_name(code);
     let grpc_code = match code {
-        ErrorCode::InvalidArgument | ErrorCode::InvalidUtf8 | ErrorCode::ProtocolError => {
-            Code::InvalidArgument
-        }
+        ErrorCode::InvalidArgument | ErrorCode::InvalidUtf8 => Code::InvalidArgument,
+        ErrorCode::ProtocolError => Code::DataLoss,
         ErrorCode::TextTooLarge
         | ErrorCode::NormalizationLimit
         | ErrorCode::MatchBudgetExceeded
