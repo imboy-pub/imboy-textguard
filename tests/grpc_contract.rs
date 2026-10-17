@@ -431,10 +431,41 @@ async fn decoded_response_keeps_scan_complete_and_decision_set() {
 // ---- AC-058: error mapping ----------------------------------------------
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn overloaded_and_text_too_large_share_resource_exhausted_but_keep_distinct_codes() {
-    for (code, name) in [
-        (ErrorCode::Overloaded, "OVERLOADED"),
-        (ErrorCode::TextTooLarge, "TEXT_TOO_LARGE"),
+async fn core_errors_preserve_frozen_status_and_application_codes() {
+    for (code, name, status) in [
+        (ErrorCode::Overloaded, "OVERLOADED", Code::ResourceExhausted),
+        (
+            ErrorCode::TextTooLarge,
+            "TEXT_TOO_LARGE",
+            Code::ResourceExhausted,
+        ),
+        (
+            ErrorCode::NormalizationLimit,
+            "NORMALIZATION_LIMIT",
+            Code::ResourceExhausted,
+        ),
+        (
+            ErrorCode::MatchBudgetExceeded,
+            "MATCH_BUDGET_EXCEEDED",
+            Code::ResourceExhausted,
+        ),
+        (ErrorCode::ProtocolError, "PROTOCOL_ERROR", Code::DataLoss),
+        (
+            ErrorCode::NormalizerIncompatible,
+            "NORMALIZER_INCOMPATIBLE",
+            Code::Internal,
+        ),
+        (ErrorCode::InternalError, "INTERNAL_ERROR", Code::Internal),
+        (
+            ErrorCode::ConnectionFailed,
+            "CONNECTION_FAILED",
+            Code::Unavailable,
+        ),
+        (
+            ErrorCode::UnsupportedRuleset,
+            "UNSUPPORTED_RULESET",
+            Code::FailedPrecondition,
+        ),
     ] {
         let core = MockCore::failing(code);
         let address = spawn_server(core).await;
@@ -447,7 +478,7 @@ async fn overloaded_and_text_too_large_share_resource_exhausted_but_keep_distinc
             ))
             .await
             .unwrap_err();
-        assert_eq!(error.code(), Code::ResourceExhausted, "{error:?}");
+        assert_eq!(error.code(), status, "{error:?}");
         assert_eq!(error.message(), name);
         assert_eq!(error_code_of(&error), name);
     }

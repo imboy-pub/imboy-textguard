@@ -112,6 +112,36 @@ async fn unpublished_info_omits_snapshot_fields_on_both_transports() {
     assert_eq!(info.regex_count, None);
 }
 
+#[tokio::test]
+async fn unsupported_package_version_returns_configuration_error_without_activation() {
+    use axum::body::{to_bytes, Body};
+    use axum::http::Request;
+    use imboy_textguard::api::auth::AuthTokens;
+    use std::sync::Arc;
+    use tonic::codegen::Service as _;
+
+    let directory = Directory::new();
+    let state = Arc::new(directory.open());
+    let mut package: Value = serde_json::from_slice(&package("甲词")).unwrap();
+    package["schema_version"] = Value::from(2);
+    let mut router = imboy_textguard::api::http::manage::router(
+        state.clone(),
+        Arc::new(AuthTokens::new("check", "publish")),
+    );
+    let request = Request::put("/internal/v1/rulesets/active")
+        .header("authorization", "publish")
+        .header("if-match", token(&state))
+        .body(Body::from(serde_json::to_vec(&package).unwrap()))
+        .unwrap();
+    let response = router.call(request).await.unwrap();
+    assert_eq!(response.status(), 503);
+    let body = to_bytes(response.into_body(), 256 * 1024).await.unwrap();
+    let error: Value = serde_json::from_slice(&body).unwrap();
+    assert_eq!(error["error"]["code"], "UNSUPPORTED_RULESET");
+    assert_eq!(error["error"]["retryable"], false);
+    assert!(state.current().is_none());
+}
+
 #[test]
 fn lost_ack_retries_the_identical_package_without_a_new_generation() {
     let directory = Directory::new();

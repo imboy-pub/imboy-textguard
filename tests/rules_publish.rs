@@ -742,7 +742,7 @@ async fn oversized_encoded_and_invalid_bodies_are_rejected() {
         .body(Body::from(one_word_ruleset("坏词甲")))
         .unwrap();
     let (status, value, _) = send(fixture.router.clone(), gzip).await;
-    assert_eq!(status, StatusCode::BAD_REQUEST);
+    assert_eq!(status, StatusCode::BAD_GATEWAY);
     assert_eq!(error_code(&value), "PROTOCOL_ERROR");
 
     // a ruleset that parses but fails compilation is INVALID_RULESET

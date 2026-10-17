@@ -58,20 +58,20 @@ pub(super) fn retryable(code: ErrorCode) -> bool {
 }
 
 /// Frozen status table; see the module documentation in `super`.
-/// NORMALIZATION_LIMIT and MATCH_BUDGET_EXCEEDED are input-driven limits
-/// and map to 413, matching the gRPC RESOURCE_EXHAUSTED family (AC-058
-/// cross-transport consistency).
 pub(super) fn status_for(code: ErrorCode) -> StatusCode {
     match code {
-        ErrorCode::InvalidArgument | ErrorCode::InvalidUtf8 | ErrorCode::ProtocolError => {
-            StatusCode::BAD_REQUEST
+        ErrorCode::InvalidArgument | ErrorCode::InvalidUtf8 => StatusCode::BAD_REQUEST,
+        ErrorCode::TextTooLarge => StatusCode::PAYLOAD_TOO_LARGE,
+        ErrorCode::NormalizationLimit | ErrorCode::MatchBudgetExceeded => {
+            StatusCode::UNPROCESSABLE_ENTITY
         }
-        ErrorCode::TextTooLarge
-        | ErrorCode::NormalizationLimit
-        | ErrorCode::MatchBudgetExceeded => StatusCode::PAYLOAD_TOO_LARGE,
         ErrorCode::Unauthenticated => StatusCode::UNAUTHORIZED,
         ErrorCode::PermissionDenied => StatusCode::FORBIDDEN,
-        ErrorCode::Overloaded | ErrorCode::NotReady => StatusCode::SERVICE_UNAVAILABLE,
+        ErrorCode::Overloaded => StatusCode::TOO_MANY_REQUESTS,
+        ErrorCode::NotReady | ErrorCode::ConnectionFailed | ErrorCode::UnsupportedRuleset => {
+            StatusCode::SERVICE_UNAVAILABLE
+        }
+        ErrorCode::ProtocolError => StatusCode::BAD_GATEWAY,
         ErrorCode::CheckDeadline => StatusCode::GATEWAY_TIMEOUT,
         _ => StatusCode::INTERNAL_SERVER_ERROR,
     }
@@ -90,7 +90,7 @@ mod tests {
         assert_eq!(status_for(ErrorCode::InvalidUtf8), StatusCode::BAD_REQUEST);
         assert_eq!(
             status_for(ErrorCode::ProtocolError),
-            StatusCode::BAD_REQUEST
+            StatusCode::BAD_GATEWAY
         );
         assert_eq!(
             status_for(ErrorCode::TextTooLarge),
@@ -106,7 +106,7 @@ mod tests {
         );
         assert_eq!(
             status_for(ErrorCode::Overloaded),
-            StatusCode::SERVICE_UNAVAILABLE
+            StatusCode::TOO_MANY_REQUESTS
         );
         assert_eq!(
             status_for(ErrorCode::NotReady),
@@ -118,11 +118,11 @@ mod tests {
         );
         assert_eq!(
             status_for(ErrorCode::MatchBudgetExceeded),
-            StatusCode::PAYLOAD_TOO_LARGE
+            StatusCode::UNPROCESSABLE_ENTITY
         );
         assert_eq!(
             status_for(ErrorCode::NormalizationLimit),
-            StatusCode::PAYLOAD_TOO_LARGE
+            StatusCode::UNPROCESSABLE_ENTITY
         );
         assert_eq!(
             status_for(ErrorCode::InternalError),

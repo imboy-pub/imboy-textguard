@@ -20,11 +20,14 @@
 //!
 //! | Error code family                              | Status |
 //! |------------------------------------------------|--------|
-//! | `INVALID_ARGUMENT`, `INVALID_UTF8`, `PROTOCOL_ERROR` | 400 |
+//! | `INVALID_ARGUMENT`, `INVALID_UTF8`             | 400    |
 //! | `TEXT_TOO_LARGE`                               | 413    |
+//! | `NORMALIZATION_LIMIT`, `MATCH_BUDGET_EXCEEDED` | 422    |
 //! | `UNAUTHENTICATED`                              | 401    |
 //! | `PERMISSION_DENIED`                            | 403    |
-//! | `OVERLOADED`, `NOT_READY`                      | 503    |
+//! | `OVERLOADED`                                   | 429    |
+//! | `NOT_READY`, `CONNECTION_FAILED`, `UNSUPPORTED_RULESET` | 503 |
+//! | `PROTOCOL_ERROR`                               | 502    |
 //! | `CHECK_DEADLINE`                               | 504    |
 //! | every other code                               | 500    |
 //!
