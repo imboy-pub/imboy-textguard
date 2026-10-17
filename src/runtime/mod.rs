@@ -6,6 +6,9 @@ use std::sync::{
 use std::time::{Duration, Instant};
 use tokio::sync::{OwnedSemaphorePermit, Semaphore};
 
+pub mod config;
+pub mod server;
+
 pub const WORKERS: usize = 2;
 pub const WAITING: usize = 32;
 pub const ADMISSION_WAIT: Duration = Duration::from_millis(5);

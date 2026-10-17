@@ -462,8 +462,16 @@ impl PublishedCore {
 
 impl CheckCore for PublishedCore {
     fn check(&self, request: &CheckRequest) -> Result<CheckResponse, ErrorCode> {
+        self.check_cancellable(request, &|| false)
+    }
+
+    fn check_cancellable(
+        &self,
+        request: &CheckRequest,
+        cancelled: &(dyn Fn() -> bool + Sync),
+    ) -> Result<CheckResponse, ErrorCode> {
         let current = self.state.current().ok_or(ErrorCode::NotReady)?;
-        current.snapshot().check(request, &|| false)
+        current.snapshot().check(request, cancelled)
     }
 
     fn info(&self) -> InfoResponse {

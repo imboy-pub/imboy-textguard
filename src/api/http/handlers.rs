@@ -1,9 +1,7 @@
 //! Route handlers for the HTTP data plane.
 //!
 //! Handlers own transport concerns only: credential scope, encoding/size
-//! bounds and strict parsing. The parsed [`CheckRequest`] is handed straight
-//! to [`CheckCore::check`]; runtime admission and deadline wiring are T19's
-//! assembly job.
+//! bounds, strict parsing and shared runtime admission.
 
 use super::error::ApiError;
 use super::validate::parse_check_request;
@@ -26,39 +24,85 @@ const LENGTH_LIMIT_MESSAGE: &str = "length limit exceeded";
 pub(super) struct HttpState {
     core: Arc<dyn CheckCore>,
     tokens: Arc<AuthTokens>,
+    admission: crate::runtime::Admission,
+    metrics: Arc<crate::observability::Metrics>,
 }
 
 impl HttpState {
-    pub(super) fn new(core: Arc<dyn CheckCore>, tokens: Arc<AuthTokens>) -> Self {
-        Self { core, tokens }
+    pub(super) fn new(
+        core: Arc<dyn CheckCore>,
+        tokens: Arc<AuthTokens>,
+        admission: crate::runtime::Admission,
+        metrics: Arc<crate::observability::Metrics>,
+    ) -> Self {
+        Self {
+            core,
+            tokens,
+            admission,
+            metrics,
+        }
     }
 }
 
 pub(super) async fn check_handler(State(state): State<HttpState>, request: Request) -> Response {
     if let Err(error) = authorize(&state.tokens, request.headers()) {
-        return error.into_response();
+        return failed(&state, error);
     }
     if let Err(error) = check_transport(request.headers()) {
-        return error.into_response();
+        return failed(&state, error);
     }
     run_check(&state, request).await
 }
 
 async fn run_check(state: &HttpState, request: Request) -> Response {
-    let bytes = match read_bounded_body(request).await {
-        Ok(bytes) => bytes,
-        Err(error) => return error.into_response(),
+    let reader = match state.admission.reader() {
+        Ok(reader) => reader,
+        Err(code) => return failed(state, ApiError::new(code)),
     };
+    let bytes = match tokio::time::timeout(
+        std::time::Duration::from_secs(1),
+        read_bounded_body(request),
+    )
+    .await
+    {
+        Ok(Ok(bytes)) => bytes,
+        Ok(Err(error)) => return failed(state, error),
+        Err(_) => return failed(state, ApiError::new(ErrorCode::CheckDeadline)),
+    };
+    drop(reader);
     let parsed = match parse_check_request(&bytes) {
         Ok(parsed) => parsed,
-        Err(error) => return error.into_response(),
+        Err(error) => return failed(state, error),
     };
-    match state.core.check(&parsed) {
+    let request_id = parsed.request_id.clone();
+    let parsed = Arc::new(parsed);
+    let measured = parsed.clone();
+    let started = std::time::Instant::now();
+    let core = state.core.clone();
+    let deadline = core.check_deadline(None);
+    let result = state
+        .admission
+        .execute(deadline, move |token| {
+            core.check_cancellable(&parsed, &|| token.is_cancelled())
+        })
+        .await;
+    state.metrics.record_check(
+        &measured,
+        crate::runtime::Transport::Http,
+        started.elapsed(),
+        &result,
+    );
+    match result {
         Ok(response) => (StatusCode::OK, Json(response)).into_response(),
-        Err(code) => ApiError::new(code)
-            .for_request(&parsed.request_id)
-            .into_response(),
+        Err(code) => ApiError::new(code).for_request(&request_id).into_response(),
     }
+}
+
+fn failed(state: &HttpState, error: ApiError) -> Response {
+    state
+        .metrics
+        .record_failure(crate::runtime::Transport::Http, error.code());
+    error.into_response()
 }
 
 pub(super) async fn info_handler(State(state): State<HttpState>, headers: HeaderMap) -> Response {
