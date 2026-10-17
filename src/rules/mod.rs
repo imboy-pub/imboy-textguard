@@ -1,88 +1,17 @@
-//! Ruleset publication: CAS, fsync persistence and RCU snapshot switching
-//! (T14, plan §9).
-//!
-//! # Storage layout
-//!
-//! ```text
-//! <root>/packages/<sha256-of-published-bytes>.json   immutable packages
-//! <root>/manifest.json                               ACTIVE pointer
-//! <root>/tmp/                                        staging area
-//! ```
-//!
-//! The manifest is the single authority for what is active
-//! (`schema_version, package_digest, generation, instance_id,
-//! updated_at_unix, updated_at_rfc3339`). Recovery loads the manifest,
-//! re-hashes the package and rebuilds the snapshot; any mismatch (or a
-//! missing/unparseable manifest or package) leaves the store NOT READY —
-//! recovery never falls back to scanning `packages/` for the newest file
-//! (AC-065/AC-070 partial).
-//!
-//! # Publication semantics
-//!
-//! * `revision` — the ETag and the CAS token — is the first 16 hex chars
-//!   of the SHA-256 of the *exact published bytes* (packages are stored
-//!   byte-exact and content-addressed). The engine separately reports
-//!   `base_rules_digest` (canonical serialization) in every check
-//!   response; for canonically serialized packages the two digests
-//!   coincide.
-//! * `If-Match` must equal the active revision and may be omitted only
-//!   for the initial publish into a store with no active ruleset. An
-//!   omitted header while a ruleset is active is a CAS failure (surfaced
-//!   as HTTP 428 by the management plane; a mismatched token as 409).
-//! * Republishing byte-identical content while it is already active (with
-//!   a matching `If-Match`) is an idempotent success: the receipt marks
-//!   `already_active = true` and the generation does not change. The CAS
-//!   check runs first, so a stale `If-Match` never gets the idempotent
-//!   path.
-//! * Every real publish increments the generation by exactly one.
-//!   Generation is persisted in the manifest, so it survives restarts.
-//!   After an A->B->A cycle the content revision repeats but the
-//!   (revision, generation) identity never does: CAS never selects
-//!   content and recovery never scans, so old state can never be
-//!   "resurrected" by a stale ETag (AC-064).
-//! * `instance_id` is fresh per process and recorded in the manifest.
-//!   [`PublishedState::published_by`] reports the manifest recorder, so a
-//!   restarted process serving an inherited manifest is observable: the
-//!   serving `instance_id` differs from `published_by`. A rebuilt data
-//!   directory (missing or unverifiable manifest/package) fails closed
-//!   and an ETag from the old instance cannot validate against it.
-//!
-//! # Durability
-//!
-//! Packages and the manifest are staged in `tmp/`, written with
-//! `File::sync_all`, renamed into place, then the containing directory is
-//! fsynced. Directory fsyncs treat the "unsupported" errno family
-//! (EBADF/EINVAL/EOPNOTSUPP/ENOSYS — macOS directory fds) as best-effort
-//! skips; that gap is exactly what T22 re-verifies on Linux with fault
-//! injection. A failure *before* the manifest rename leaves the previous
-//! state and generation fully intact. A real durability failure *after*
-//! the rename yields [`PublishError::UnknownState`]: the manifest is
-//! already the ACTIVE pointer, so the error never claims "not published"
-//! (AC-068 semantics; structure here, injection in T22). Retention keeps
-//! at most the active and the previous package file on disk; older files
-//! are removed best-effort after the in-memory swap. The retired
-//! in-memory snapshot is simply dropped once readers finish — there is no
-//! unbounded retention.
-//!
-//! # Concurrency
-//!
-//! One `std::sync::Mutex` serializes publications per store object: a
-//! concurrent publish fails immediately with [`PublishError::Busy`],
-//! there is no queueing. Readers take the current
-//! `Arc<PublishedState>` from an `RwLock` and finish their whole request
-//! on it, so a swap during a request can never split one response across
-//! two rulesets (AC-066). At most one store per directory should publish;
-//! cross-process publication into one directory is out of scope for T14.
+//! Publication state, full-byte revision, persistent instance identity and generation CAS.
+//! A single build lock and bounded retired snapshot protect publication resources.
+//! An unverified ACTIVE or post-rename durability error fails closed until recovery.
 
 mod store;
 
 use crate::api::{CheckCore, InfoResponse};
 use crate::engine::{BuildError, Snapshot};
-use crate::model::{CheckRequest, CheckResponse, ErrorCode, RuleSet};
+use crate::model::{CheckRequest, CheckResponse, ErrorCode, RuleSet, Scene};
 use std::collections::HashMap;
 use std::io;
 use std::path::{Path, PathBuf};
-use std::sync::{Arc, Mutex, RwLock, RwLockWriteGuard, TryLockError};
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Mutex, RwLock, RwLockWriteGuard, TryLockError, Weak};
 
 /// Maximum accepted ruleset package body: 64 MiB (enforced again by the
 /// management router on top of this core-level guard).
@@ -122,13 +51,14 @@ pub struct PublishedState {
     updated_at_rfc3339: String,
     t2s_table_id: String,
     counts: RuleCounts,
+    scene_counts: [usize; 3],
 }
 
 impl PublishedState {
     fn assemble(snapshot: Snapshot, ruleset: &RuleSet, manifest: &store::Manifest) -> Self {
         Self {
             snapshot,
-            revision: manifest.package_digest[..16].to_owned(),
+            revision: manifest.package_digest.clone(),
             digest: manifest.package_digest.clone(),
             generation: manifest.generation,
             published_by: manifest.instance_id.clone(),
@@ -136,6 +66,23 @@ impl PublishedState {
             updated_at_rfc3339: manifest.updated_at_rfc3339.clone(),
             t2s_table_id: ruleset.t2s_table_id.clone(),
             counts: RuleCounts::of(ruleset),
+            scene_counts: [
+                Scene::ChannelMessage,
+                Scene::MomentPost,
+                Scene::ProfileField,
+            ]
+            .map(|scene| {
+                ruleset
+                    .literals
+                    .iter()
+                    .filter(|rule| rule.scenes.contains(&scene))
+                    .count()
+                    + ruleset
+                        .regex_rules
+                        .iter()
+                        .filter(|rule| rule.scenes.contains(&scene))
+                        .count()
+            }),
         }
     }
 
@@ -143,8 +90,8 @@ impl PublishedState {
         &self.snapshot
     }
 
-    /// Publication revision: first 16 hex chars of the package byte
-    /// digest; also the ETag and CAS token.
+    /// Publication revision: full SHA-256 of the package byte
+    /// digest; state ETags additionally bind instance and generation.
     pub fn revision(&self) -> &str {
         &self.revision
     }
@@ -178,6 +125,10 @@ impl PublishedState {
     pub fn counts(&self) -> RuleCounts {
         self.counts
     }
+
+    pub fn scene_counts(&self) -> [usize; 3] {
+        self.scene_counts
+    }
 }
 
 /// Load-time status of the store (see [`RulesState::status`]).
@@ -200,6 +151,8 @@ pub struct PublishReceipt {
     pub digest: String,
     pub instance_id: String,
     pub already_active: bool,
+    pub state_etag: String,
+    pub scene_counts: [usize; 3],
 }
 
 /// Publication failure. `Io` failures always precede the manifest rename,
@@ -209,6 +162,7 @@ pub struct PublishReceipt {
 pub enum PublishError {
     Busy,
     CasConflict,
+    RetiredSnapshotBusy,
     Invalid(ErrorCode),
     Io(io::Error),
     UnknownState(&'static str),
@@ -220,6 +174,7 @@ impl PublishError {
         match self {
             Self::Busy => ErrorCode::PublishBusy,
             Self::CasConflict => ErrorCode::CasConflict,
+            Self::RetiredSnapshotBusy => ErrorCode::RetiredSnapshotBusy,
             Self::Invalid(code) => *code,
             Self::Io(_) => ErrorCode::InternalError,
             Self::UnknownState(_) => ErrorCode::PublishStateUnknown,
@@ -236,12 +191,27 @@ pub struct RulesState {
     current: RwLock<Option<Arc<PublishedState>>>,
     status: StoreStatus,
     publishing: Mutex<()>,
+    uncertain: AtomicBool,
+    retired: Mutex<Weak<PublishedState>>,
 }
 
 impl RulesState {
-    /// Open (and recover) a data directory with a fresh instance id.
+    /// Open (and recover) a data directory with its persistent instance id.
     pub fn load(dir: impl Into<PathBuf>, table: &'static HashMap<char, char>) -> io::Result<Self> {
-        Self::load_with_instance(dir, table, store::fresh_instance_id())
+        let dir = dir.into();
+        store::ensure_layout(&dir)?;
+        let instance_id = store::load_or_create_instance(&dir)?;
+        let state = Self::load_with_instance(dir, table, instance_id)?;
+        if let Some(active) = state.current() {
+            if active.published_by() != state.instance_id() {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "ACTIVE instance identity mismatch",
+                ));
+            }
+            store::mark_history(state.dir())?;
+        }
+        Ok(state)
     }
 
     /// Load with an explicit instance id. Test/recovery seam that
@@ -274,6 +244,8 @@ impl RulesState {
             current: RwLock::new(current),
             status,
             publishing: Mutex::new(()),
+            uncertain: AtomicBool::new(false),
+            retired: Mutex::new(Weak::new()),
         })
     }
 
@@ -289,6 +261,9 @@ impl RulesState {
 
     /// The active published state, if one is loaded.
     pub fn current(&self) -> Option<Arc<PublishedState>> {
+        if self.uncertain.load(Ordering::Acquire) {
+            return None;
+        }
         // lock poisoning never invalidates a whole-state pointer: the
         // guarded Option is either complete or absent, so readers recover
         // instead of cascading a panic into every request
@@ -300,19 +275,38 @@ impl RulesState {
 
     /// True when an active package is loaded and served.
     pub fn ready(&self) -> bool {
-        self.current
-            .read()
-            .unwrap_or_else(|poisoned| poisoned.into_inner())
-            .is_some()
+        self.current().is_some()
     }
 
     /// Load-time outcome (recomputed to `Ready` once a publish succeeds).
     pub fn status(&self) -> StoreStatus {
-        if self.ready() {
+        if self.uncertain.load(Ordering::Acquire) {
+            StoreStatus::Failed("publication durability is unknown".to_owned())
+        } else if self.ready() {
             StoreStatus::Ready
         } else {
             self.status.clone()
         }
+    }
+
+    pub fn active_state(&self) -> Result<(Option<Arc<PublishedState>>, String), PublishError> {
+        if matches!(self.status, StoreStatus::Failed(_)) || self.uncertain.load(Ordering::Acquire) {
+            return Err(PublishError::UnknownState("ACTIVE cannot be verified"));
+        }
+        let active = self.current();
+        if self.uncertain.load(Ordering::Acquire) {
+            return Err(PublishError::UnknownState(
+                "publication durability is unknown",
+            ));
+        }
+        let generation = active.as_ref().map_or(0, |value| value.generation());
+        let revision = active.as_ref().map_or("", |value| value.revision());
+        let etag = self.etag(generation, revision);
+        Ok((active, etag))
+    }
+
+    fn etag(&self, generation: u64, revision: &str) -> String {
+        store::sha256_hex(format!("{}\n{generation}\n{revision}", self.instance_id).as_bytes())
     }
 
     /// Publish one ruleset package (plan §9). `bytes` are stored exactly
@@ -326,15 +320,6 @@ impl RulesState {
         if bytes.len() > MAX_PACKAGE_BYTES {
             return Err(PublishError::Invalid(ErrorCode::TextTooLarge));
         }
-        // parse and compile up front: an invalid package must never touch
-        // the publish lock or the disk
-        let text = std::str::from_utf8(bytes)
-            .map_err(|_| PublishError::Invalid(ErrorCode::InvalidUtf8))?;
-        let ruleset: RuleSet = serde_json::from_str(text)
-            .map_err(|_| PublishError::Invalid(ErrorCode::InvalidRuleset))?;
-        let compiled = Snapshot::build(&ruleset, self.table)
-            .map_err(|error| PublishError::Invalid(build_error_code(error)))?;
-
         // single-flight publication: a concurrent publish fails fast
         let _guard = match self.publishing.try_lock() {
             Ok(guard) => guard,
@@ -343,13 +328,8 @@ impl RulesState {
         };
 
         // CAS against the manifest-backed active state
-        let current = self.current();
-        match (&current, if_match) {
-            (None, None) => {}
-            (None, Some(_)) => return Err(PublishError::CasConflict),
-            (Some(active), Some(token)) if token == active.revision() => {}
-            (Some(_), _) => return Err(PublishError::CasConflict),
-        }
+        let (current, etag) = self.active_state()?;
+        let supplied_etag = if_match.ok_or(PublishError::CasConflict)?;
         let digest = store::sha256_hex(bytes);
         if let Some(active) = &current {
             if active.digest() == digest {
@@ -359,12 +339,35 @@ impl RulesState {
                     digest,
                     instance_id: self.instance_id.clone(),
                     already_active: true,
+                    state_etag: etag,
+                    scene_counts: active.scene_counts(),
                 });
             }
         }
+        if supplied_etag != etag {
+            return Err(PublishError::CasConflict);
+        }
+
+        let mut retired = self
+            .retired
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        if retired.strong_count() > 0 {
+            return Err(PublishError::RetiredSnapshotBusy);
+        }
+        let generation = current
+            .as_ref()
+            .map_or(0, |active| active.generation())
+            .checked_add(1)
+            .ok_or(PublishError::Invalid(ErrorCode::InvalidRuleset))?;
+        let text = std::str::from_utf8(bytes)
+            .map_err(|_| PublishError::Invalid(ErrorCode::InvalidUtf8))?;
+        let ruleset: RuleSet = serde_json::from_str(text)
+            .map_err(|_| PublishError::Invalid(ErrorCode::InvalidRuleset))?;
+        let compiled = Snapshot::build(&ruleset, self.table)
+            .map_err(|error| PublishError::Invalid(build_error_code(error)))?;
 
         // persist: package first, then the ACTIVE manifest, then swap
-        let generation = current.as_ref().map_or(1, |active| active.generation() + 1);
         store::write_package(&self.dir, &digest, bytes).map_err(PublishError::Io)?;
         let updated_at_unix = store::unix_now();
         let manifest = store::Manifest {
@@ -375,33 +378,36 @@ impl RulesState {
             updated_at_unix,
             updated_at_rfc3339: store::rfc3339(updated_at_unix),
         };
-        let mut durability_unknown = false;
         match store::write_manifest(&self.dir, &manifest) {
             Ok(()) => {}
             Err(store::ManifestError::Pre(error)) => return Err(PublishError::Io(error)),
-            Err(store::ManifestError::PostRenameDurability) => durability_unknown = true,
+            Err(store::ManifestError::PostRenameDurability) => {
+                self.uncertain.store(true, Ordering::Release);
+                return Err(PublishError::UnknownState(
+                    "ACTIVE rename completed but directory fsync failed",
+                ));
+            }
         }
 
         // RCU swap: readers hold the old Arc until they finish
         let previous = current.as_ref().map(|active| active.digest().to_owned());
-        let snapshot = compiled.with_generation(&generation.to_string());
+        let snapshot = compiled.with_publication(&digest, generation);
         let state = Arc::new(PublishedState::assemble(snapshot, &ruleset, &manifest));
+        let scene_counts = state.scene_counts();
+        *retired = current.as_ref().map_or_else(Weak::new, Arc::downgrade);
         *self.write_current() = Some(state);
         store::cleanup_packages(
             &self.dir,
             &[digest.as_str(), previous.as_deref().unwrap_or("")],
         );
-        if durability_unknown {
-            return Err(PublishError::UnknownState(
-                "manifest renamed but its directory fsync failed: the publication may or may not be durable",
-            ));
-        }
         Ok(PublishReceipt {
-            revision: manifest.package_digest[..16].to_owned(),
+            revision: manifest.package_digest.clone(),
             generation,
             digest,
             instance_id: self.instance_id.clone(),
             already_active: false,
+            state_etag: self.etag(generation, &manifest.package_digest),
+            scene_counts,
         })
     }
 
@@ -421,7 +427,7 @@ fn restore(
     let ruleset: RuleSet = serde_json::from_slice(bytes).ok()?;
     let snapshot = Snapshot::build(&ruleset, table).ok()?;
     Some(PublishedState::assemble(
-        snapshot.with_generation(&manifest.generation.to_string()),
+        snapshot.with_publication(&manifest.package_digest, manifest.generation),
         &ruleset,
         manifest,
     ))
@@ -477,8 +483,6 @@ impl CheckCore for PublishedCore {
         };
         if let Some(current) = self.state.current() {
             info.ready = true;
-            // the publication revision (ETag identity); equals the engine
-            // content revision for canonically serialized packages
             info.ruleset_revision = current.revision().to_owned();
             info.generation = current.generation().to_string();
             info.t2s_table_id = current.t2s_table_id().to_owned();

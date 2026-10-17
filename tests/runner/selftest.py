@@ -60,6 +60,13 @@ class Sandbox(unittest.TestCase):
 
 
 class ProcessTests(Sandbox):
+    def test_rust_discovery_preserves_safe_ids_and_still_redacts_known_values(self):
+        with patch.dict(os.environ, {"RUNNER_TEST_SECRET": "sensitive_test_name"}):
+            redact = command_receipt.redactor()
+            self.assertEqual(redact("first_state_token: test\n"), "first_state_token: test\n")
+            self.assertNotIn("sensitive_test_name", redact("sensitive_test_name: test\n"))
+            self.assertNotIn("hidden", redact("token: hidden\n"))
+
     def test_empty_argv_terminal(self):
         result = self.command([])
         self.assertEqual(result["outcome_exit_code"], 64)

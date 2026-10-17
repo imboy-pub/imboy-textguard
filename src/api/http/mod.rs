@@ -13,7 +13,7 @@
 //! `Bearer <token>` (see [`crate::api::auth`]).
 //!
 //! Every failure uses one stable JSON shape:
-//! `{"error": {"code": "SCREAMING_SNAKE", "message": "..."}}`. Success on
+//! `{"error": {"code": "SCREAMING_SNAKE", "request_id": "...", "retryable": false}}`. Success on
 //! `/v1/check` is `200` with the `CheckResponse` JSON.
 //!
 //! HTTP status mapping:

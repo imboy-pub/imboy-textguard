@@ -40,7 +40,7 @@
 //! # Error contract (AC-058)
 //!
 //! Every [`model::ErrorCode`] carries its `SCREAMING_SNAKE` code string both in
-//! the tonic status message and in the `textguard-error-code` response
+//! the tonic status message and in the `x-textguard-error-code` response
 //! metadata key, so an Erlang client can tell e.g. `OVERLOADED` apart from
 //! `TEXT_TOO_LARGE` even though both map to `RESOURCE_EXHAUSTED`:
 //!
@@ -100,7 +100,8 @@ use tonic::{Code, Request, Response, Status};
 pub const MAX_MESSAGE_BYTES: usize = 256 * 1024;
 
 /// Metadata key carrying the `SCREAMING_SNAKE` error code on every error status.
-pub const ERROR_CODE_METADATA: &str = "textguard-error-code";
+pub const ERROR_CODE_METADATA: &str = "x-textguard-error-code";
+pub const REQUEST_ID_METADATA: &str = "x-textguard-request-id";
 
 /// gRPC deadline values are clamped to this so `Instant + Duration` cannot overflow.
 const MAX_GRPC_TIMEOUT: Duration = Duration::from_secs(24 * 60 * 60);
@@ -153,16 +154,24 @@ impl crate::protocol::text_guard_server::TextGuard for TextGuardSvc {
         self.authorize(request.metadata())
             .map_err(status_from_error)?;
         let requested = grpc_timeout_deadline(request.metadata());
-        let core_request = to_model_request(request.into_inner()).map_err(status_from_error)?;
+        let request_id = request
+            .get_ref()
+            .request_id
+            .as_deref()
+            .filter(|value| crate::model::valid_identifier(value))
+            .unwrap_or("")
+            .to_owned();
+        let core_request = to_model_request(request.into_inner())
+            .map_err(|code| status_for_request(code, &request_id))?;
         let deadline = self.core.check_deadline(requested);
         let core = Arc::clone(&self.core);
         let task = tokio::task::spawn_blocking(move || core.check(&core_request));
         match tokio::time::timeout_at(deadline.into(), task).await {
             Ok(Ok(Ok(response))) => Ok(Response::new(to_proto_response(response))),
-            Ok(Ok(Err(code))) => Err(status_from_error(code)),
+            Ok(Ok(Err(code))) => Err(status_for_request(code, &request_id)),
             // the blocking task panicked: the core never produced a decision
-            Ok(Err(_join_error)) => Err(status_from_error(ErrorCode::InternalError)),
-            Err(_elapsed) => Err(status_from_error(ErrorCode::CheckDeadline)),
+            Ok(Err(_join_error)) => Err(status_for_request(ErrorCode::InternalError, &request_id)),
+            Err(_elapsed) => Err(status_for_request(ErrorCode::CheckDeadline, &request_id)),
         }
     }
 
@@ -313,7 +322,7 @@ fn proto_match_method(method: model::MatchMethod) -> crate::protocol::MatchMetho
 }
 
 /// The `SCREAMING_SNAKE` wire name of an error code, shared by the status
-/// message and the `textguard-error-code` metadata.
+/// message and the `x-textguard-error-code` metadata.
 fn error_code_name(code: ErrorCode) -> &'static str {
     match code {
         ErrorCode::InvalidArgument => "INVALID_ARGUMENT",
@@ -342,6 +351,10 @@ fn error_code_name(code: ErrorCode) -> &'static str {
 
 /// The full AC-058 mapping; see the module doc table for the rationale.
 fn status_from_error(code: ErrorCode) -> Status {
+    status_for_request(code, "")
+}
+
+fn status_for_request(code: ErrorCode, request_id: &str) -> Status {
     let name = error_code_name(code);
     let grpc_code = match code {
         ErrorCode::InvalidArgument | ErrorCode::InvalidUtf8 | ErrorCode::ProtocolError => {
@@ -368,6 +381,10 @@ fn status_from_error(code: ErrorCode) -> Status {
     metadata.insert(
         ERROR_CODE_METADATA,
         name.parse().expect("valid header value"),
+    );
+    metadata.insert(
+        REQUEST_ID_METADATA,
+        request_id.parse().expect("validated request identity"),
     );
     Status::with_metadata(grpc_code, name, metadata)
 }

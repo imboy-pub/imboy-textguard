@@ -9,11 +9,22 @@ use serde_json::json;
 /// A transport-level failure: one error code plus its HTTP status.
 pub(super) struct ApiError {
     code: ErrorCode,
+    request_id: String,
 }
 
 impl ApiError {
     pub(super) fn new(code: ErrorCode) -> Self {
-        Self { code }
+        Self {
+            code,
+            request_id: String::new(),
+        }
+    }
+
+    pub(super) fn for_request(mut self, request_id: &str) -> Self {
+        if crate::model::valid_identifier(request_id) {
+            self.request_id = request_id.to_owned();
+        }
+        self
     }
 
     #[cfg(test)]
@@ -27,11 +38,23 @@ impl IntoResponse for ApiError {
         let body = json!({
             "error": {
                 "code": self.code,
-                "message": message_for(self.code),
+                "request_id": self.request_id,
+                "retryable": retryable(self.code),
             }
         });
         (status_for(self.code), Json(body)).into_response()
     }
+}
+
+pub(super) fn retryable(code: ErrorCode) -> bool {
+    matches!(
+        code,
+        ErrorCode::Overloaded
+            | ErrorCode::NotReady
+            | ErrorCode::ConnectionFailed
+            | ErrorCode::PublishBusy
+            | ErrorCode::RetiredSnapshotBusy
+    )
 }
 
 /// Frozen status table; see the module documentation in `super`.
@@ -51,23 +74,6 @@ pub(super) fn status_for(code: ErrorCode) -> StatusCode {
         ErrorCode::Overloaded | ErrorCode::NotReady => StatusCode::SERVICE_UNAVAILABLE,
         ErrorCode::CheckDeadline => StatusCode::GATEWAY_TIMEOUT,
         _ => StatusCode::INTERNAL_SERVER_ERROR,
-    }
-}
-
-fn message_for(code: ErrorCode) -> &'static str {
-    match code {
-        ErrorCode::InvalidArgument => "request violates the check request contract",
-        ErrorCode::InvalidUtf8 => "request body is not valid UTF-8",
-        ErrorCode::TextTooLarge => "request body exceeds the accepted size limit",
-        ErrorCode::Unauthenticated => "missing or unknown credential",
-        ErrorCode::PermissionDenied => "credential is not authorized for this operation",
-        ErrorCode::ProtocolError => "request violates the transport protocol contract",
-        ErrorCode::Overloaded => "service is overloaded",
-        ErrorCode::NotReady => "service is not ready",
-        ErrorCode::CheckDeadline => "check deadline exceeded",
-        ErrorCode::MatchBudgetExceeded => "match budget exceeded",
-        ErrorCode::NormalizationLimit => "normalization limit exceeded",
-        _ => "internal error",
     }
 }
 
