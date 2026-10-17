@@ -97,6 +97,14 @@ impl Snapshot {
         &self.digest
     }
 
+    /// Override the placeholder generation ("0") with the publication
+    /// generation (T14). The publication layer owns this value; the engine
+    /// itself never assigns or interprets it.
+    pub fn with_generation(mut self, generation: &str) -> Self {
+        self.generation = generation.to_owned();
+        self
+    }
+
     /// Run the complete frozen pipeline for one request against this
     /// snapshot. Field order follows the request; the same budget covers
     /// literal, exception and gap candidates across every field.
