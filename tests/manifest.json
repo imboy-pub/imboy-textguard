@@ -7,6 +7,11 @@
       "commands": ["t22-fault-publish", "t22-fault-process"],
       "acceptance": ["AC-067", "AC-068", "AC-069", "AC-070", "AC-071"]
     },
+    "T23": {
+      "phase": "final-verification",
+      "commands": ["t23-final-admission", "t23-final-deploy-tls"],
+      "acceptance": ["AC-087", "AC-088", "AC-089", "AC-090"]
+    },
     "T17": {
       "commands": ["t17-runtime", "t17-image"],
       "acceptance": ["AC-087", "AC-088", "AC-089", "AC-090"]

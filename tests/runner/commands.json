@@ -1,7 +1,29 @@
 {
   "schema_version": 1,
   "commands": {
-    "runner-selftest": {
+    "t23-final-admission": {
+   "argv": ["cargo", "test", "--locked", "--test", "final_admission_privacy"],
+   "discovery_argv": ["cargo", "test", "--locked", "--test", "final_admission_privacy", "--", "--list"],
+   "cwd": ".",
+   "environment_allowlist": ["PATH", "LANG", "LC_ALL", "TZ", "TMPDIR", "HOME", "RUSTUP_HOME", "CARGO_HOME", "CARGO_TARGET_DIR"],
+   "timeout_seconds": 300,
+   "count_format": "rust",
+   "expected_exit": 0,
+   "acceptance": ["AC-087", "AC-088", "AC-089"],
+   "scope": "T23 real-process final: mixed HTTP+gRPC saturate the shared admission budget with explicit rejections and instant recovery; abandoned clients release permits as real work drains; canary never reaches logs or metrics"
+  },
+  "t23-final-deploy-tls": {
+   "argv": ["cargo", "test", "--locked", "--test", "final_deploy_tls"],
+   "discovery_argv": ["cargo", "test", "--locked", "--test", "final_deploy_tls", "--", "--list"],
+   "cwd": ".",
+   "environment_allowlist": ["PATH", "LANG", "LC_ALL", "TZ", "TMPDIR", "HOME", "RUSTUP_HOME", "CARGO_HOME", "CARGO_TARGET_DIR"],
+   "timeout_seconds": 300,
+   "count_format": "rust",
+   "expected_exit": 0,
+   "acceptance": ["AC-090"],
+   "scope": "T23 real-process deployment boundaries: non-loopback binds refuse to start, missing/world-readable secrets refuse to start, manage credentials stay scoped; real nginx TLS gateway proxies checks, plaintext on the TLS port is refused, untrusting clients fail verification (requires nginx and openssl on PATH)"
+  },
+  "runner-selftest": {
       "argv": [
         "python3",
         "-B",
