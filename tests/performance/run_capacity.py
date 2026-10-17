@@ -156,6 +156,8 @@ class Capacity(unittest.TestCase):
         (datasets / "B1-50000-dense.cases.jsonl").write_text(
             "".join(json.dumps(row, ensure_ascii=False) + "\n" for row in dense))
 
+    job_seconds = {}
+
     @classmethod
     def write_jobs(cls, jobs):
         def job(name, **fields):
@@ -165,6 +167,7 @@ class Capacity(unittest.TestCase):
                     "secret_file": "/perf/check", "seconds": 600, "qps": 500,
                     "concurrency": 64, "arrival": "open"}
             base.update(fields)
+            type(cls).job_seconds[name] = base["seconds"]
             (jobs / (name + ".json")).write_text(json.dumps(base))
 
         for profile in ["B0", "B1"]:
@@ -220,17 +223,17 @@ class Capacity(unittest.TestCase):
         raise RuntimeError("isolated service not live")
 
     @classmethod
-    def docker(cls, *arguments, check=True, save=None):
+    def docker(cls, *arguments, check=True, save=None, timeout=300):
         with cls.docker_lock:
-            return cls._docker_locked(*arguments, check=check, save=save)
+            return cls._docker_locked(*arguments, check=check, save=save, timeout=timeout)
 
     @classmethod
-    def _docker_locked(cls, *arguments, check=True, save=None):
+    def _docker_locked(cls, *arguments, check=True, save=None, timeout=300):
         cls.sequence += 1
         started = time.time()
         try:
             result = subprocess.run(["docker", *arguments], capture_output=True, text=True,
-                                    timeout=300)
+                                    timeout=timeout)
         except subprocess.TimeoutExpired as error:
             result = subprocess.CompletedProcess(
                 ["docker", *arguments], 124, str(error.stdout or ""), str(error.stderr or ""))
@@ -284,7 +287,10 @@ class Capacity(unittest.TestCase):
                     "--entrypoint", "/usr/local/bin/textguard-perf",
                     self.image, "/perf/jobs/" + name + ".json")
         self.verify_quota(client, "2,3")
-        execution = self.docker("start", "--attach", client, check=False)
+        # attach must outlive the job itself plus scheduling/drain slack
+        attach_timeout = max(600, type(self).job_seconds.get(name, 300) + 240)
+        execution = self.docker("start", "--attach", client, check=False,
+                                timeout=attach_timeout)
         state = json.loads(self.docker("inspect", client, save=name + "-exit.json").stdout)[0]["State"]
         target = self.evidence / (name + ".jsonl")
         copy = self.docker("cp", client + ":/perf/results/" + name + ".jsonl", str(target), check=False)
