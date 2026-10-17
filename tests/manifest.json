@@ -2,6 +2,11 @@
   "schema_version": 1,
   "commands_file": "runner/commands.json",
   "tasks": {
+    "T22": {
+      "phase": "fault-injection",
+      "commands": ["t22-fault-publish", "t22-fault-process"],
+      "acceptance": ["AC-067", "AC-068", "AC-069", "AC-070", "AC-071"]
+    },
     "T17": {
       "commands": ["t17-runtime", "t17-image"],
       "acceptance": ["AC-087", "AC-088", "AC-089", "AC-090"]

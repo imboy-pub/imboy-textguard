@@ -39,6 +39,11 @@ async fn main() -> std::process::ExitCode {
         };
     }
     std::panic::set_hook(Box::new(|_| eprintln!("INTERNAL_ERROR")));
+    #[cfg(feature = "fault-injection")]
+    if let Err(error) = activate_fault_rules_from_env() {
+        eprintln!("NOT_READY: {error}");
+        return std::process::ExitCode::from(2);
+    }
     let config = match imboy_textguard::runtime::config::Config::from_env() {
         Ok(config) => config,
         Err(code) => {
@@ -62,4 +67,23 @@ async fn shutdown() {
         _ = tokio::signal::ctrl_c() => (),
         _ = terminate.recv() => (),
     }
+}
+
+/// Test-only activation (compiled behind `fault-injection`):
+/// `TEXTGUARD_FAULT_KILL_AT=<point>` makes the process die instantly the
+/// first time publication reaches that commit boundary. Production
+/// builds never read this variable.
+#[cfg(feature = "fault-injection")]
+fn activate_fault_rules_from_env() -> Result<(), String> {
+    let kill_at = std::env::var("TEXTGUARD_FAULT_KILL_AT").unwrap_or_default();
+    if kill_at.is_empty() {
+        return Ok(());
+    }
+    let point = imboy_textguard::rules::fault::point_from_name(&kill_at)
+        .ok_or_else(|| format!("unknown fault point: {kill_at}"))?;
+    imboy_textguard::rules::fault::install(vec![(
+        point,
+        imboy_textguard::rules::fault::Action::KillProcess,
+    )]);
+    Ok(())
 }

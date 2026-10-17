@@ -6,6 +6,11 @@ rust-version = "1.90.0"
 publish = false
 build = "build.rs"
 
+[features]
+# Test-only fault injection seam for T22 publication fault testing.
+# Production builds never enable this; hook call sites compile away.
+fault-injection = []
+
 [dependencies]
 aho-corasick = "=1.1.3"
 axum = "=0.7.9"

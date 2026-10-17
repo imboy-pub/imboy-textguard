@@ -14,6 +14,29 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use super::MANIFEST_SCHEMA_VERSION;
 
+/// One commit boundary in the publication state machine (plan §9).
+/// Always defined so the (feature-gated) fault seam shares one type with
+/// the always-compiled no-op hook below.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Point {
+    /// Staging write or fsync while persisting a ruleset package.
+    PackageStage,
+    /// Rename of the staged package into `packages/`.
+    PackageRename,
+    /// The `packages/` directory fsync after that rename.
+    PackageDirSync,
+    /// Creation or fsync of the publication-history marker.
+    HistoryMarker,
+    /// Staging write or fsync of the manifest body.
+    ManifestStage,
+    /// Rename of the staged manifest over ACTIVE (before rename: a Pre
+    /// failure leaves the previous state fully intact).
+    ManifestRename,
+    /// The root directory fsync after the manifest rename. A failure here
+    /// is post-commit: durability is unknown (AC-068).
+    ManifestDirSync,
+}
+
 pub(crate) const PACKAGE_DIR: &str = "packages";
 pub(crate) const TMP_DIR: &str = "tmp";
 pub(crate) const MANIFEST_FILE: &str = "manifest.json";
@@ -204,25 +227,31 @@ pub(crate) fn write_package(root: &Path, digest: &str, bytes: &[u8]) -> io::Resu
         Err(error) if error.kind() == io::ErrorKind::NotFound => {}
         Err(error) => return Err(error),
     }
+    hook(Point::PackageStage)?;
     let staged = stage(root, &format!("pkg-{digest}"), bytes)?;
-    if let Err(error) = fs::rename(&staged, &target) {
+    if let Err(error) = hook(Point::PackageRename).and_then(|()| fs::rename(&staged, &target)) {
         let _ = fs::remove_file(&staged);
         return Err(error);
     }
+    hook(Point::PackageDirSync)?;
     sync_dir(&packages)
 }
 
 /// Replace the ACTIVE manifest: stage, fsync, rename over `manifest.json`.
 /// See [`ManifestError`] for the pre/post-rename failure split.
 pub(crate) fn write_manifest(root: &Path, manifest: &Manifest) -> Result<(), ManifestError> {
+    hook(Point::HistoryMarker).map_err(ManifestError::Pre)?;
     mark_history(root).map_err(ManifestError::Pre)?;
     let bytes = serde_json::to_vec_pretty(manifest).expect("manifest serialization cannot fail");
+    hook(Point::ManifestStage).map_err(ManifestError::Pre)?;
     let staged = stage(root, "manifest", &bytes).map_err(ManifestError::Pre)?;
     let target = root.join(MANIFEST_FILE);
-    if let Err(error) = fs::rename(&staged, &target) {
+    let renamed = hook(Point::ManifestRename).and_then(|()| fs::rename(&staged, &target));
+    if let Err(error) = renamed {
         let _ = fs::remove_file(&staged);
         return Err(ManifestError::Pre(error));
     }
+    hook(Point::ManifestDirSync).map_err(|_| ManifestError::PostRenameDurability)?;
     match sync_dir(root) {
         Ok(()) => Ok(()),
         Err(_error) => Err(ManifestError::PostRenameDurability),
@@ -333,11 +362,21 @@ fn sync_dir(path: &Path) -> io::Result<()> {
     File::open(path)?.sync_all()
 }
 
+#[cfg(feature = "fault-injection")]
+fn hook(point: Point) -> io::Result<()> {
+    super::fault::trigger(point)
+}
+
+#[cfg(not(feature = "fault-injection"))]
+fn hook(_point: Point) -> io::Result<()> {
+    Ok(())
+}
+
 fn is_sha256_hex(value: &str) -> bool {
     value.len() == 64 && value.bytes().all(|byte| byte.is_ascii_hexdigit())
 }
 
-pub(crate) fn sha256_hex(bytes: &[u8]) -> String {
+pub fn sha256_hex(bytes: &[u8]) -> String {
     format!("{:x}", Sha256::digest(bytes))
 }
 
