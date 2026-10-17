@@ -264,6 +264,16 @@ class CheckpointTests(Sandbox):
 
 
 class RunnerTests(Sandbox):
+    def test_measurement_phase_does_not_pass_aggregate_acceptance(self):
+        response = self.invoke("--task", "T18", "--evidence", str(self.evidence))
+        self.assertEqual(response.returncode, 0)
+        result = json.loads((self.evidence / "result.json").read_text())
+        self.assertEqual((result["status"], result["phase"], result["acceptance_scope"]),
+                         ("PASS", "T18_measurement", "phase"))
+        for acceptance in result["ac_results"].values():
+            self.assertEqual(acceptance["status"], "NOT_RUN")
+            self.assertEqual(acceptance["phase_results"]["T18_measurement"]["status"], "PASS")
+
     def setUp(self):
         super().setUp()
         self.source = self.sandbox / "source"

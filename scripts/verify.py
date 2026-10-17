@@ -142,14 +142,15 @@ def main():
     if any(evidence.iterdir()):
         parser.error("evidence directory must be empty; preserve previous attempts")
     (evidence / "raw").mkdir(mode=0o700)
-    result = {"task_id": args.task, "lane": "T", "phase": "runner",
+    phase = task.get("phase", "runner")
+    result = {"task_id": args.task, "lane": "T", "phase": phase,
               "status": "NOT_RUN", "applicability": "local", "started_at": helper.timestamp(),
               "finished_at": None, "repo_sha_map": {}, "working_tree_diff_digest": None,
               "dependency_mode": "registry_locked", "resolved_dependency_digest": None,
               "ruleset_revision": None, "generation": None, "normalization_id": None,
               "t2s_table_id": None, "environment": {"python": sys.version, "platform": sys.platform},
               "command_argv": [], "exit_code": 2, "tests_discovered": 0, "tests_executed": 0,
-              "ac_results": {ac: {"status": "NOT_RUN", "phase": "runner", "applicability": "local",
+              "ac_results": {ac: {"status": "NOT_RUN", "phase": phase, "applicability": "local",
                                    "reason": "No completed selector", "subresults": []} for ac in required},
               "evidence_paths": [], "limitations": manifest.get("limitations", []),
               "reviewer_type": "engineering_agent_selftest", "evidence_validity": "UNKNOWN",
@@ -238,6 +239,13 @@ def main():
                 result.update(status="BLOCKED", exit_code=2, reason="Required AC selectors not registered")
             if result["status"] == "PASS" and result["tests_executed"] == 0:
                 result.update(status="FAIL", exit_code=1, reason="Zero tests executed")
+            if task.get("acceptance_scope") == "phase":
+                result["acceptance_scope"] = "phase"
+                for ac in result["ac_results"].values():
+                    completed_phase = dict(ac)
+                    ac.update(status="NOT_RUN" if ac["status"] == "PASS" else ac["status"],
+                              phase="aggregate", reason="Final acceptance requires remaining phases",
+                              phase_results={phase: completed_phase})
         after, _ = fingerprint(registry, selected_commands)
         result["fingerprint_after"] = after
         result["evidence_validity"] = "VALID" if before == after else "STALE"

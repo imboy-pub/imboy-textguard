@@ -650,6 +650,41 @@
       ],
       "scope": "gRPC data plane component: presence, unknown enums, error-code contract, 256KiB framing limits and grpc-timeout deadline race over an in-process tonic transport; server assembly, TLS and the standard health service remain T17/T19 obligations."
     },
+    "t18-dataset": {
+      "argv": ["python3", "-B", "tests/performance/dataset.py", "--selftest"],
+      "discovery_argv": ["python3", "-B", "tests/performance/dataset.py", "--list"],
+      "cwd": ".",
+      "environment_allowlist": ["PATH", "LANG", "LC_ALL", "TZ", "TMPDIR"],
+      "timeout_seconds": 60,
+      "count_format": "unittest",
+      "expected_exit": 0,
+      "acceptance": ["AC-091", "AC-092"],
+      "scope": "Deterministic synthetic B0/B1 sizes and independent expected decisions; no business evaluation claim."
+    },
+    "t18-harness": {
+      "argv": ["python3", "-B", "tests/performance/run_baseline.py", "--selftest"],
+      "discovery_argv": ["python3", "-B", "tests/performance/run_baseline.py", "--selftest-list"],
+      "cwd": ".",
+      "environment_allowlist": ["PATH", "LANG", "LC_ALL", "TZ", "TMPDIR"],
+      "timeout_seconds": 60,
+      "count_format": "unittest",
+      "expected_exit": 0,
+      "acceptance": ["AC-091", "AC-092"],
+      "scope": "Measurement parser regressions for actual metric names and completion/drain windows."
+    },
+    "t18-baseline": {
+      "argv": ["python3", "-B", "tests/performance/run_baseline.py"],
+      "discovery_argv": ["python3", "-B", "tests/performance/run_baseline.py", "--list"],
+      "cwd": ".",
+      "environment_allowlist": ["PATH", "LANG", "LC_ALL", "TZ", "TMPDIR", "HOME", "TEXTGUARD_PERF_IMAGE", "TEXTGUARD_PERF_EVIDENCE", "TEXTGUARD_PERF_LOCK"],
+      "required_environment": ["TEXTGUARD_PERF_IMAGE", "TEXTGUARD_PERF_EVIDENCE", "TEXTGUARD_PERF_LOCK"],
+      "blocked_exit_codes": [2],
+      "timeout_seconds": 1200,
+      "count_format": "unittest",
+      "expected_exit": 0,
+      "acceptance": ["AC-091", "AC-092"],
+      "scope": "Actual release core and HTTP/gRPC/mixed B0/B1 baselines on exclusive Linux 2CPU/2GiB service with separate load CPUs, local named volumes and immutable image. Full matrix and 70-minute soak remain T24."
+    },
     "t14-rules": {
       "argv": [
         "cargo",

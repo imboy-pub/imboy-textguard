@@ -134,6 +134,12 @@
         "AC-059"
       ]
     },
+    "T18": {
+      "phase": "T18_measurement",
+      "acceptance_scope": "phase",
+      "commands": ["t18-dataset", "t18-harness", "t18-baseline"],
+      "acceptance": ["AC-091", "AC-092"]
+    },
     "T14": {
       "commands": [
         "t14-rules"

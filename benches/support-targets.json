@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "capacity_acceptance": "T24_CAPACITY_NOT_ACCEPTED",
+  "profiles": {
+    "B0": {"canonical": 50000, "aliases": 0, "gap_rules": 0, "regex_rules": 0, "exceptions": 0, "completed_qps": 500, "p99_us": 10000, "steady_rss_bytes": 268435456, "update_rss_bytes": 536870912},
+    "B1": {"canonical": 50000, "aliases": 10000, "gap_rules": 5000, "regex_rules": 32, "exceptions": 100, "completed_qps": 500, "p99_us": 20000, "steady_rss_bytes": 536870912, "update_rss_bytes": 1073741824}
+  },
+  "environment": {"os": "Linux", "architecture": "aarch64", "service_cpus": 2, "service_memory_bytes": 2147483648, "service_cpuset": "0,1", "generator_cpus": 2, "generator_memory_bytes": 2147483648, "generator_cpuset": "2,3", "storage": "Linux ext4 Docker named volume; no macOS bind mounts"},
+  "ordinary_input_bytes": 1024,
+  "mixed_http_grpc_ratio": [1, 1],
+  "request_distribution_percent": {"no_hit": 90, "low_density": 9, "high_density": 1},
+  "build_and_activate_deadline_us": 30000000,
+  "t18_method": "Ten-second finite batches without warmup; scheduled-to-complete latency includes client scheduling, encoding, transport, service and decoding. Effective throughput includes drain. All raw capacity comparisons remain PASS/FAIL observations, separate from the measurement gate. Post-update RSS samples are not classified as steady-state evidence.",
+  "t24_method": {"warmup_seconds": 600, "measurement_seconds": 3600, "different_successful_rulesets": 100, "steady_window": "Fixed monotonic interval after the complete warmup; preserve warmup, measured and drain samples. Record completed rate over the fixed interval and full offered-batch rate including drain separately. RSS steady budget applies throughout the predeclared measured interval; update peaks remain separately bounded. No adaptive low-memory window or rounded throughput.", "rss_growth": "Last ten-minute median versus first stable ten-minute median: at most max(10%, 32 MiB), also within absolute budget."},
+  "limitations": ["Targets are frozen engineering goals, not verified supported capacity.", "Short-batch throughput below 500 and post-update load RSS above the steady target remain failures in capacity observations.", "Synthetic deterministic mechanism/performance fixtures are not authorized business-evaluation data.", "The full rule/input/concurrency/overload/cancellation matrix and soak remain T24 obligations."]
+}
