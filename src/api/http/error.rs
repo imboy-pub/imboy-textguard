@@ -35,12 +35,17 @@ impl IntoResponse for ApiError {
 }
 
 /// Frozen status table; see the module documentation in `super`.
+/// NORMALIZATION_LIMIT and MATCH_BUDGET_EXCEEDED are input-driven limits
+/// and map to 413, matching the gRPC RESOURCE_EXHAUSTED family (AC-058
+/// cross-transport consistency).
 pub(super) fn status_for(code: ErrorCode) -> StatusCode {
     match code {
         ErrorCode::InvalidArgument | ErrorCode::InvalidUtf8 | ErrorCode::ProtocolError => {
             StatusCode::BAD_REQUEST
         }
-        ErrorCode::TextTooLarge => StatusCode::PAYLOAD_TOO_LARGE,
+        ErrorCode::TextTooLarge
+        | ErrorCode::NormalizationLimit
+        | ErrorCode::MatchBudgetExceeded => StatusCode::PAYLOAD_TOO_LARGE,
         ErrorCode::Unauthenticated => StatusCode::UNAUTHORIZED,
         ErrorCode::PermissionDenied => StatusCode::FORBIDDEN,
         ErrorCode::Overloaded | ErrorCode::NotReady => StatusCode::SERVICE_UNAVAILABLE,
@@ -107,7 +112,11 @@ mod tests {
         );
         assert_eq!(
             status_for(ErrorCode::MatchBudgetExceeded),
-            StatusCode::INTERNAL_SERVER_ERROR
+            StatusCode::PAYLOAD_TOO_LARGE
+        );
+        assert_eq!(
+            status_for(ErrorCode::NormalizationLimit),
+            StatusCode::PAYLOAD_TOO_LARGE
         );
         assert_eq!(
             status_for(ErrorCode::InternalError),

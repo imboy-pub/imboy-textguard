@@ -493,6 +493,17 @@ async fn credential_failures_map_to_unauthenticated_and_permission_denied() {
     );
     assert!(client.check_text(bearer).await.is_ok());
     assert_eq!(core.seen_requests().len(), 1);
+
+    // repeated credentials are treated as absent, for HTTP-plane parity
+    let mut repeated =
+        authorized_request(Some("req-1"), Some(1), vec![field(Some("body"), Some("x"))]);
+    repeated
+        .metadata_mut()
+        .append("authorization", CHECK_TOKEN.parse().unwrap());
+    let error = client.check_text(repeated).await.unwrap_err();
+    assert_eq!(error.code(), Code::Unauthenticated);
+    assert_eq!(error_code_of(&error), "UNAUTHENTICATED");
+    assert_eq!(core.seen_requests().len(), 1);
 }
 
 // ---- AC-059: limits, deadline and compression ---------------------------

@@ -119,11 +119,17 @@ impl TextGuardSvc {
     /// Returns the small [`ErrorCode`] so call sites map it through
     /// [`status_from_error`] themselves (keeps `Status` out of the hot path).
     fn authorize(&self, metadata: &MetadataMap) -> Result<(), ErrorCode> {
-        let presented = metadata
-            .get("authorization")
-            .and_then(|value| value.to_str().ok())
-            .map(strip_bearer);
-        self.tokens.verify(Scope::Check, presented)
+        let mut presented = metadata
+            .get_all("authorization")
+            .iter()
+            .filter_map(|value| value.to_str().ok().map(strip_bearer));
+        let first = presented.next();
+        if presented.next().is_some() {
+            // parity with the HTTP plane: repeated credentials are treated
+            // as absent rather than first-wins
+            return Err(ErrorCode::Unauthenticated);
+        }
+        self.tokens.verify(Scope::Check, first)
     }
 }
 

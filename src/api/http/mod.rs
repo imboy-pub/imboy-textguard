@@ -29,8 +29,8 @@
 //! | every other code                               | 500    |
 //!
 //! Body limits (AC-054): bodies larger than [`MAX_BODY_BYTES`] are rejected
-//! twice — first via an up-front `Content-Length` check, then via
-//! `DefaultBodyLimit` plus a bounded read, so chunked bodies are covered too.
+//! twice — an up-front `Content-Length` check, then a bounded read of the
+//! actual body (which covers chunked requests).
 //! `Content-Encoding` other than absent/`identity` is a protocol error and the
 //! service never decompresses.
 //!

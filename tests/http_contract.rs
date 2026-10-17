@@ -444,8 +444,13 @@ async fn core_errors_map_to_the_documented_status_table() {
         ),
         (
             ErrorCode::MatchBudgetExceeded,
-            StatusCode::INTERNAL_SERVER_ERROR,
+            StatusCode::PAYLOAD_TOO_LARGE,
             "MATCH_BUDGET_EXCEEDED",
+        ),
+        (
+            ErrorCode::NormalizationLimit,
+            StatusCode::PAYLOAD_TOO_LARGE,
+            "NORMALIZATION_LIMIT",
         ),
     ] {
         let fixture = fixture_with(Some(error), true);
@@ -454,6 +459,19 @@ async fn core_errors_map_to_the_documented_status_table() {
         assert_eq!(actual_status, status, "code: {code}");
         assert_eq!(error_code(&value), code);
     }
+}
+
+#[tokio::test]
+async fn repeated_authorization_headers_are_treated_as_absent() {
+    let fixture = fixture();
+    let mut request = post_check(Some(CHECK_TOKEN), valid_body());
+    request.headers_mut().append(
+        header::AUTHORIZATION,
+        header::HeaderValue::from_static(CHECK_TOKEN),
+    );
+    let (status, value) = send(fixture.router, request).await;
+    assert_eq!(status, StatusCode::UNAUTHORIZED);
+    assert_eq!(error_code(&value), "UNAUTHENTICATED");
 }
 
 #[tokio::test]
