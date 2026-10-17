@@ -1,7 +1,19 @@
 {
   "schema_version": 1,
   "commands": {
-    "t23-final-admission": {
+    "t24-capacity": {
+   "argv": ["python3", "-B", "tests/performance/run_capacity.py"],
+   "discovery_argv": ["python3", "-B", "tests/performance/run_capacity.py", "--list"],
+   "cwd": ".",
+   "environment_allowlist": ["PATH", "LANG", "LC_ALL", "TZ", "TMPDIR", "HOME", "TEXTGUARD_PERF_IMAGE", "TEXTGUARD_PERF_EVIDENCE", "TEXTGUARD_PERF_LOCK"],
+   "required_environment": ["TEXTGUARD_PERF_IMAGE"],
+   "timeout_seconds": 18000,
+   "count_format": "unittest",
+   "expected_exit": 0,
+   "acceptance": ["AC-091", "AC-092", "AC-093", "AC-094", "AC-095", "AC-096"],
+   "scope": "T24 frozen-method capacity on immutable Linux image: B0/B1 http/grpc/mixed 600s warm + 600s measure, closed points, overload ladders 750/1000/1500, boundary sizes + 32KiB multi-field + dense, 1h B1 soak with 100 distinct publications, OOM/kill recovery; exclusive resource lock enforced"
+  },
+  "t23-final-admission": {
    "argv": ["cargo", "test", "--locked", "--test", "final_admission_privacy"],
    "discovery_argv": ["cargo", "test", "--locked", "--test", "final_admission_privacy", "--", "--list"],
    "cwd": ".",

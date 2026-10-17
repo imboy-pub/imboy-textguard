@@ -2,6 +2,11 @@
   "schema_version": 1,
   "commands_file": "runner/commands.json",
   "tasks": {
+    "T24": {
+      "phase": "T24_capacity",
+      "commands": ["t24-capacity"],
+      "acceptance": ["AC-091", "AC-092", "AC-093", "AC-094", "AC-095", "AC-096"]
+    },
     "T22": {
       "phase": "fault-injection",
       "commands": ["t22-fault-publish", "t22-fault-process"],
