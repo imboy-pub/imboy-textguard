@@ -620,6 +620,47 @@
         "AC-059"
       ],
       "scope": "gRPC data plane component: presence, unknown enums, error-code contract, 256KiB framing limits and grpc-timeout deadline race over an in-process tonic transport; server assembly, TLS and the standard health service remain T17/T19 obligations."
+    },
+    "t14-rules": {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--test",
+        "rules_publish"
+      ],
+      "discovery_argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--test",
+        "rules_publish",
+        "--",
+        "--list"
+      ],
+      "cwd": ".",
+      "environment_allowlist": [
+        "PATH",
+        "LANG",
+        "LC_ALL",
+        "TZ",
+        "TMPDIR",
+        "HOME",
+        "RUSTUP_HOME",
+        "CARGO_HOME",
+        "CARGO_TARGET_DIR"
+      ],
+      "timeout_seconds": 900,
+      "count_format": "rust",
+      "expected_exit": 0,
+      "acceptance": [
+        "AC-062",
+        "AC-063",
+        "AC-064",
+        "AC-065",
+        "AC-066"
+      ],
+      "scope": "T14 publication plane: CAS publish with If-Match (idempotent republish, stale/held ETag conflicts, ABA/instance-replacement), fsync-staged package/manifest persistence with fail-closed recovery and restart continuity, RCU snapshot switching with reader-consistency stress, and the scoped management router (GET/PUT /internal/v1/rulesets/active); full Linux fault injection is T22."
     }
   }
 }
