@@ -488,6 +488,7 @@ async fn serve_listener(
             _ = connections.join_next(), if !connections.is_empty() => (),
             accepted = listener.accept() => {
                 let (stream, _) = accepted.map_err(|_| "ACCEPT_FAILED")?;
+                if stream.set_nodelay(true).is_err() { continue; }
                 let permit = if http { admission.connection(Transport::Http).ok() } else { grpc_connections.clone().try_acquire_owned().ok() };
                 let Some(permit) = permit else { continue; };
                 let router = router.clone();
