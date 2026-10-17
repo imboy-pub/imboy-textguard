@@ -328,10 +328,57 @@ async fn ac090_real_nginx_tls_gateway_boundaries() {
         ),
     )
     .unwrap();
-    let mut nginx = Command::new("nginx")
+    let nginx = Command::new("nginx")
         .args(["-c", conf.to_str().unwrap(), "-p", dir.to_str().unwrap()])
         .spawn()
         .expect("nginx must be available on this host");
+    // a Drop guard: even if an assertion below panics, the host nginx and
+    // its temp directory are still torn down (mirrors the Process guard)
+    struct NginxGuard {
+        child: std::process::Child,
+        conf: PathBuf,
+        prefix: PathBuf,
+    }
+    impl NginxGuard {
+        fn running(&mut self) -> bool {
+            self.child.try_wait().ok().flatten().is_none()
+        }
+        fn finish(mut self) {
+            let _ = Command::new("nginx")
+                .args([
+                    "-c",
+                    self.conf.to_str().unwrap(),
+                    "-p",
+                    self.prefix.to_str().unwrap(),
+                    "-s",
+                    "stop",
+                ])
+                .output();
+            let _ = self.child.wait();
+        }
+    }
+    impl Drop for NginxGuard {
+        fn drop(&mut self) {
+            if self.running() {
+                let _ = Command::new("nginx")
+                    .args([
+                        "-c",
+                        self.conf.to_str().unwrap(),
+                        "-p",
+                        self.prefix.to_str().unwrap(),
+                        "-s",
+                        "stop",
+                    ])
+                    .output();
+                let _ = self.child.wait();
+            }
+        }
+    }
+    let mut nginx = NginxGuard {
+        child: nginx,
+        conf,
+        prefix: dir.clone(),
+    };
     // wait for the TLS listener
     let gateway = format!("127.0.0.1:{tls_port}");
     let mut live = false;
@@ -340,7 +387,7 @@ async fn ac090_real_nginx_tls_gateway_boundaries() {
             live = true;
             break;
         }
-        assert!(nginx.try_wait().unwrap().is_none(), "nginx exited early");
+        assert!(nginx.running(), "nginx exited early");
         std::thread::sleep(Duration::from_millis(20));
     }
     assert!(live, "nginx TLS gateway did not come up");
@@ -393,18 +440,8 @@ async fn ac090_real_nginx_tls_gateway_boundaries() {
         &distrust_text[..distrust_text.len().min(400)]
     );
 
-    // cleanup
-    let _ = Command::new("nginx")
-        .args([
-            "-c",
-            conf.to_str().unwrap(),
-            "-p",
-            dir.to_str().unwrap(),
-            "-s",
-            "stop",
-        ])
-        .output();
-    let _ = nginx.wait();
+    // cleanup (the guard also covers panic paths)
+    nginx.finish();
     process.stop().await;
     let _ = std::fs::remove_dir_all(&dir);
 }

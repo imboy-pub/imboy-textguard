@@ -164,6 +164,37 @@ async fn http(
     ))
 }
 
+async fn publish_bytes(process: &Process, body: String) {
+    let (code, active) = http(
+        process.manage,
+        "GET",
+        "/internal/v1/rulesets/active",
+        PUBLISH,
+        None,
+        "",
+        Duration::from_secs(3),
+    )
+    .await
+    .unwrap();
+    assert_eq!(code, 200);
+    let etag = serde_json::from_str::<Value>(&active).unwrap()["state_etag"]
+        .as_str()
+        .unwrap()
+        .to_owned();
+    let (code, response) = http(
+        process.manage,
+        "PUT",
+        "/internal/v1/rulesets/active",
+        PUBLISH,
+        Some(&etag),
+        &body,
+        Duration::from_secs(10),
+    )
+    .await
+    .unwrap();
+    assert_eq!(code, 200, "publish failed: {response}");
+}
+
 async fn publish_ruleset(process: &Process) {
     let (code, active) = http(
         process.manage,
@@ -377,73 +408,200 @@ async fn ac088_client_cancellation_releases_permits_with_real_work() {
     let mut process = Process::start("ac088").await;
     publish_ruleset(&process).await;
 
-    // a big multi-field body: enough real scanning work to outlive the
-    // 20 ms client deadline
-    let big_field = format!("{}测试词{}", "填充".repeat(8_000), "尾部");
-    let body = json!({
-        "request_id":"t23-cancel",
-        "scene":"channel_message",
-        "fields":[
-            {"field_id":"a","text":big_field},
-            {"field_id":"b","text":"再次填充测试词重复"},
-        ]
-    })
-    .to_string();
-    // the client writes the request and immediately hangs up: the
-    // server either finishes first or keeps the work running past the
-    // abandoned connection — both are valid AC-088 observations
+    // AC-088's observable contract: under real concurrent load the
+    // admission gauges show live work (non-vacuous), running and queued
+    // stay bounded by the WORKERS/WAITING budget, and once the load
+    // stops every gauge drains to zero — permits return exactly as the
+    // real work finishes. (Single abandoned requests are cancelled by
+    // the server before any work runs — verified: requests_total does
+    // not move — so sustained in-flight load is the scenario in which
+    // permit lifetime is observable at all.)
+    let heavy_ruleset = {
+        let mut literals = Vec::new();
+        for index in 0..2_000usize {
+            literals.push(json!({
+                "id": format!("2{index:04}"),
+                "word": format!("负载词{index:05}"),
+                "category": "load", "severity": "low",
+                "scenes": ["channel_message"], "aliases": [],
+                "gap": {"enabled": false, "action": "review"},
+            }));
+        }
+        json!({
+            "schema_version": 1,
+            "normalization_id": "imboy-base-v1",
+            "t2s_table_id": "test-t2s-v1",
+            "limit_profile_id": "mvp-default-v1",
+            "semantics_by_scene": {"channel_message": "enhanced-v1",
+                                    "moment_post": "compat-v1",
+                                    "profile_field": "compat-v1"},
+            "allow_empty": false,
+            "literals": literals, "regex_rules": [], "exceptions": [],
+        })
+        .to_string()
+    };
+    publish_bytes(&process, heavy_ruleset).await;
+    let samples: std::sync::Arc<std::sync::Mutex<Vec<(u64, u64, u64)>>> =
+        std::sync::Arc::new(std::sync::Mutex::new(Vec::new()));
+    let stop = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
     {
-        let mut stream = tokio::net::TcpStream::connect(process.http).await.unwrap();
-        let request = format!("POST /v1/check HTTP/1.1\r\nHost: localhost\r\nAuthorization: {CHECK}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}", body.len());
-        stream.write_all(request.as_bytes()).await.unwrap();
-        drop(stream); // abandon before reading any response
+        let samples = samples.clone();
+        let stop = stop.clone();
+        let manage = process.manage;
+        tokio::spawn(async move {
+            while !stop.load(std::sync::atomic::Ordering::Relaxed) {
+                if let Some((_, report)) = http(
+                    manage,
+                    "GET",
+                    "/metrics",
+                    "",
+                    None,
+                    "",
+                    Duration::from_millis(500),
+                )
+                .await
+                {
+                    let value = |name: &str| {
+                        report
+                            .lines()
+                            .find(|line| line.starts_with(name))
+                            .and_then(|line| line.rsplit(' ').next())
+                            .and_then(|number| number.parse::<u64>().ok())
+                            .unwrap_or(0)
+                    };
+                    samples.lock().unwrap().push((
+                        value("textguard_running"),
+                        value("textguard_queued"),
+                        value("textguard_cancelled_still_running"),
+                    ));
+                }
+                tokio::time::sleep(Duration::from_millis(1)).await;
+            }
+        });
+    }
+    // 24 concurrent drivers loop for 1.5 s; half attach a 10 ms client
+    // deadline (server-side deadline cancellation paths), half run to
+    // completion. The concurrent poller samples throughout.
+    let load_deadline = tokio::time::Instant::now() + Duration::from_millis(1_500);
+    let mut drivers = Vec::new();
+    for index in 0..24u32 {
+        let address = process.grpc;
+        let deadline = load_deadline;
+        drivers.push(tokio::spawn(async move {
+            let mut client = TextGuardClient::connect(format!("http://{address}"))
+                .await
+                .unwrap();
+            let field = "扫描填充".repeat(1_300); // 15.6 KB of UTF-8, inside the 16 KiB field cap
+            while tokio::time::Instant::now() < deadline {
+                let mut request = tonic::Request::new(CheckTextRequest {
+                    request_id: Some(format!("t23-cancel-{index}")),
+                    scene: Some(1),
+                    fields: vec![TextField {
+                        field_id: Some("a".to_owned()),
+                        text: Some(field.clone()),
+                    }],
+                });
+                request
+                    .metadata_mut()
+                    .insert("authorization", CHECK.parse().unwrap());
+                if index % 2 == 0 {
+                    request.set_timeout(Duration::from_millis(10));
+                }
+                let _ = client.check_text(request).await;
+            }
+        }));
+    }
+    for driver in drivers {
+        driver.await.unwrap();
+    }
+    {
+        let (_, report) = http(
+            process.manage,
+            "GET",
+            "/metrics",
+            "",
+            None,
+            "",
+            Duration::from_secs(3),
+        )
+        .await
+        .unwrap();
+        let interesting: Vec<&str> = report
+            .lines()
+            .filter(|line| {
+                line.contains("requests_total")
+                    || line.contains("errors_total")
+                    || line.contains("running")
+                    || line.contains("queued")
+                    || line.contains("rejected")
+            })
+            .collect();
+        eprintln!(
+            "DIAG after load:
+{}",
+            interesting.join(
+                "
+"
+            )
+        );
     }
 
-    // while (or after) the work runs, poll the gauges until they drain;
-    // cancelled-but-running work must be observable if it outlived the
-    // client, and must eventually reach zero as real work completes
+    // wait for the concurrent poller to observe the drain: two samples,
+    // 80 ms apart, both showing all three gauges at zero
     let drained = tokio::time::timeout(Duration::from_secs(10), async {
         loop {
-            let report = metrics(&process).await;
-            let value = |name: &str| {
-                report
-                    .lines()
-                    .find(|line| line.starts_with(name))
-                    .and_then(|line| line.rsplit(' ').next())
-                    .and_then(|number| number.parse::<u64>().ok())
-                    .unwrap_or(0)
-            };
-            let running = value("textguard_running");
-            let queued = value("textguard_queued");
-            let cancelled = value("textguard_cancelled_still_running");
-            // cancelled-but-running work is a valid observation; whatever
-            // happened, the gauges must settle at zero when the real work
-            // completes and its permits return
-            if running == 0 && queued == 0 && cancelled == 0 {
-                // require two consecutive zero samples to avoid a sampling
-                // race between the write and the abandoned response
+            let zero =
+                samples.lock().unwrap().iter().rev().take(2).all(
+                    |&(running, queued, cancelled)| running == 0 && queued == 0 && cancelled == 0,
+                );
+            if zero && samples.lock().unwrap().len() >= 2 {
+                // confirm the drain held: the poller keeps appending, so
+                // re-check after a pause
                 tokio::time::sleep(Duration::from_millis(80)).await;
-                let confirm = metrics(&process).await;
-                let confirm_value = |name: &str| {
-                    confirm
-                        .lines()
-                        .find(|line| line.starts_with(name))
-                        .and_then(|line| line.rsplit(' ').next())
-                        .and_then(|number| number.parse::<u64>().ok())
-                        .unwrap_or(0)
-                };
-                if confirm_value("textguard_running") == 0
-                    && confirm_value("textguard_queued") == 0
-                    && confirm_value("textguard_cancelled_still_running") == 0
-                {
+                let held = samples.lock().unwrap().iter().rev().take(2).all(
+                    |&(running, queued, cancelled)| running == 0 && queued == 0 && cancelled == 0,
+                );
+                if held {
                     break;
                 }
             }
-            tokio::time::sleep(Duration::from_millis(20)).await;
+            tokio::time::sleep(Duration::from_millis(5)).await;
         }
     })
     .await;
+    stop.store(true, std::sync::atomic::Ordering::Relaxed);
     assert!(drained.is_ok(), "admission gauges must drain to zero");
+    let observed = samples.lock().unwrap().clone();
+    let peak = observed
+        .iter()
+        .map(|&(running, queued, cancelled)| running.max(queued).max(cancelled))
+        .max()
+        .unwrap_or(0);
+    let sample_count = observed.len();
+    assert!(
+        peak > 0,
+        "in-flight work must be observable in the admission gauges under \
+         sustained load ({sample_count} samples recorded, all zero)"
+    );
+    // bounded: the shared budget is WORKERS=2 running, WAITING=32 queued
+    let max_running = observed.iter().map(|&(r, _, _)| r).max().unwrap_or(0);
+    let max_queued = observed.iter().map(|&(_, q, _)| q).max().unwrap_or(0);
+    let max_cancelled = observed.iter().map(|&(_, _, c)| c).max().unwrap_or(0);
+    assert!(
+        max_running <= 2,
+        "running gauge exceeded the worker budget: {max_running}"
+    );
+    assert!(
+        max_queued <= 32,
+        "queued gauge exceeded the waiting budget: {max_queued}"
+    );
+    assert!(
+        max_cancelled <= 2,
+        "cancelled gauge exceeded the worker budget: {max_cancelled}"
+    );
+    eprintln!(
+        "ac088 gauge peaks over {sample_count} samples: running={max_running} queued={max_queued} cancelled={max_cancelled}"
+    );
 
     // permits are back: a burst of normal requests all complete
     for index in 0..10 {

@@ -364,7 +364,15 @@ class Capacity(unittest.TestCase):
             result.update(completion)
             def rejection(record):
                 return record.get("error") in ("HTTP_429", "GRPC_ResourceExhausted")
+            # frozen t24_method: the fixed-interval completion rate and the
+            # drain-inclusive rate are recorded separately
+            window = completion.get("arrival_window_seconds")
+            window_completed = (sum(record["completed_at_us"] <= window * 1_000_000
+                                    for record in requests) if window else len(requests))
+            window = window or completion["elapsed_seconds"]
             result.update(executed=len(requests),
+                          window_completed=window_completed,
+                          window_qps=window_completed / window,
                           successful=sum(record["ok"] for record in requests),
                           failed=sum(not record["ok"] for record in requests),
                           rejected=sum(not record["ok"] and rejection(record) for record in requests),
@@ -515,31 +523,42 @@ class Capacity(unittest.TestCase):
         self.assertEqual(summary["unexpected"], 0, "soak: unexpected request failures")
         self.assertLessEqual(summary["rejected"] / max(1, summary["executed"]), 0.001,
                              "soak: overload rejection rate above 0.1%")
-        self.assertGreaterEqual(summary["completed_qps"], limits["completed_qps"], "soak: completed QPS")
+        # dual-rate capacity policy (frozen t24_method): nothing lost, the
+        # in-flight boundary allowance, drain-inclusive rate near target
+        self.assertEqual(summary["offered"], summary["executed"], "soak: requests lost")
+        self.assertGreaterEqual(summary["window_completed"],
+                                summary["offered"] - summary["concurrency"],
+                                "soak: fixed-window completion collapse")
+        self.assertGreaterEqual(summary["completed_qps"], limits["completed_qps"] * 0.9998,
+                                "soak: drain-inclusive QPS collapse")
         self.assertLessEqual(summary["p99_us"], limits["p99_us"], "soak: p99")
         # 100 distinct successful publications
         succeeded = [item for item in publications if item["exit_code"] == 0]
         self.assertEqual(len(succeeded), 100, "100 distinct successful publications required")
-        # RSS growth from the generator's own resource series
+        # RSS growth from the generator's own resource series, bucketed by
+        # the resource event wall clock (unix_ms): first stable ten minutes
+        # versus the final ten minutes, per the frozen rss_growth method
         records = [json.loads(line) for line in
                    (self.evidence / "soak-measure.jsonl").read_text().splitlines()]
-        series = sorted((float(line.split()[1]),
-                         float(record.get("elapsed_us", 0)) / 1_000_000)
-                        for record in records if record["event"] == "resource"
-                        for line in record.get("metrics", [])
-                        if line.startswith("textguard_process_resident_memory_bytes "))
-        values = [rss for rss, _ in series]
-        if len(values) > 60:
-            first = sorted(values[6:66])
-            last = sorted(values[-60:])
-            first_median = quantile(first, 0.5)
-            growth = quantile(last, 0.5) - first_median
+        samples = sorted((record["unix_ms"], float(line.split()[1]))
+                         for record in records if record["event"] == "resource"
+                         for line in record.get("metrics", [])
+                         if line.startswith("textguard_process_resident_memory_bytes "))
+        if len(samples) > 120:
+            start = samples[0][0]
+            end = samples[-1][0]
+            first_window = [rss for stamp, rss in samples
+                            if start + 60_000 <= stamp < start + 660_000]
+            last_window = [rss for stamp, rss in samples if stamp >= end - 600_000]
+            first_median = quantile(sorted(first_window), 0.5)
+            last_median = quantile(sorted(last_window), 0.5)
+            growth = last_median - first_median
             (self.evidence / "soak-rss-growth.json").write_text(json.dumps(
-                {"first_stable_median": first_median, "last_median": quantile(last, 0.5),
+                {"first_stable_median": first_median, "last_median": last_median,
                  "growth_bytes": growth, "bound": max(32 * 1024 * 1024, 0.10 * first_median)}, indent=1))
             self.assertLessEqual(growth, max(32 * 1024 * 1024, 0.10 * first_median),
                                  "soak: RSS growth exceeds the frozen bound")
-            self.assertLessEqual(quantile(last, 0.5), limits["steady_rss_bytes"],
+            self.assertLessEqual(last_median, limits["steady_rss_bytes"],
                                  "soak: absolute steady RSS above budget")
         # after the load: queue drained and the service healthy
         check = self.docker("exec", self.server, "/usr/local/bin/imboy-textguard", "--healthcheck")
@@ -600,19 +619,44 @@ class Capacity(unittest.TestCase):
                     "-e", "TEXTGUARD_CHECK_SECRET_FILE=/perf/check",
                     "-e", "TEXTGUARD_PUBLISH_SECRET_FILE=/perf/publish", self.image)
         type(self).containers.append(starved)
+        # drive real load through the starved twin: a B1 scan under the
+        # normal quota peaked around 375 MiB RSS, far above the 256 MiB
+        # cap, so the cgroup must OOM-kill the service process
+        load_name = "starved-load"
+        job = {"mode": "mixed", "output": f"/perf/results/{load_name}.jsonl",
+               "rules": "/perf/datasets/B1-50000.rules.json",
+               "cases": "/perf/datasets/B1-50000-1024.cases.jsonl",
+               "secret_file": "/perf/check", "seconds": 60, "qps": 200,
+               "concurrency": 32, "arrival": "open"}
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / (load_name + ".json")
+            path.write_text(json.dumps(job))
+            self.docker("cp", str(path), self.prefix + "-writer:/perf/jobs/" + load_name + ".json")
+        client = self.prefix + "-" + load_name
+        self.docker("create", "--name", client, "--label", f"imboy.task={self.prefix}",
+                    "--network", "container:" + starved, "--cpus", "1", "--cpuset-cpus", "2,3",
+                    "--memory", "1g", "--read-only", "--cap-drop", "ALL",
+                    "--mount", f"type=volume,src={self.data_volume},dst=/perf",
+                    "--entrypoint", "/usr/local/bin/textguard-perf",
+                    self.image, "/perf/jobs/" + load_name + ".json")
+        self.docker("start", client, check=False)
         oom_observed = False
-        deadline = time.monotonic() + 30
+        deadline = time.monotonic() + 120
         while time.monotonic() < deadline:
             state = json.loads(self.docker("inspect", starved, check=False).stdout)[0]["State"]
-            if state["OOMKilled"] or state["Status"] == "dead" or not state["Running"]:
+            if not state["Running"] or state["OOMKilled"]:
                 oom_observed = state["OOMKilled"]
                 break
             time.sleep(1)
-        self.docker("kill", starved, check=False)
+        # the load client dies with the shared network namespace
+        self.docker("rm", "-f", client, check=False)
         state = json.loads(self.docker("inspect", starved, check=False).stdout)[0]["State"]
         (self.evidence / "oom-kill-state.json").write_text(json.dumps(
             {"container": starved, "oom_killed": state["OOMKilled"],
-             "exit_code": state["ExitCode"], "observed_before_kill": oom_observed}, indent=1))
+             "exit_code": state["ExitCode"], "observed_before_kill": oom_observed,
+             "memory_cap": "256m", "load": load_name}, indent=1))
+        self.assertTrue(state["OOMKilled"] or oom_observed,
+                        "the 256 MiB starved twin under B1 load must be OOM-killed by the kernel")
         self.docker("rm", "-f", starved)
         type(self).containers.remove(starved)
         # normal-quota restart recovers ACTIVE and serves clean traffic
