@@ -580,6 +580,46 @@
         "AC-055"
       ],
       "scope": "T12 HTTP data plane: strict request parsing (duplicate keys, unknown fields, explicit text, frozen scenes), 256 KiB body bound without decompression, scoped credentials with stable error envelope and unauthenticated health endpoints; gRPC parity is T13 and publish endpoints are T14."
+    },
+    "t13-grpc": {
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--test",
+        "grpc_contract"
+      ],
+      "discovery_argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--test",
+        "grpc_contract",
+        "--",
+        "--list"
+      ],
+      "cwd": ".",
+      "environment_allowlist": [
+        "PATH",
+        "LANG",
+        "LC_ALL",
+        "TZ",
+        "TMPDIR",
+        "HOME",
+        "RUSTUP_HOME",
+        "CARGO_HOME",
+        "CARGO_TARGET_DIR"
+      ],
+      "timeout_seconds": 900,
+      "count_format": "rust",
+      "expected_exit": 0,
+      "acceptance": [
+        "AC-056",
+        "AC-057",
+        "AC-058",
+        "AC-059"
+      ],
+      "scope": "gRPC data plane component: presence, unknown enums, error-code contract, 256KiB framing limits and grpc-timeout deadline race over an in-process tonic transport; server assembly, TLS and the standard health service remain T17/T19 obligations."
     }
   }
 }
