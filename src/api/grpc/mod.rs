@@ -71,11 +71,10 @@
 //! (`1..=8` ASCII digits plus `H`/`M`/`S`/`m`/`u`/`n`; values beyond 24h are
 //! clamped to keep `Instant` arithmetic overflow-free; unparseable values are
 //! ignored, matching tonic's own client behavior). The effective deadline is
-//! `core.check_deadline(requested)`, i.e. never longer than the requested one
-//! and bounded by the core's check budget. `core.check` runs on
-//! `tokio::task::spawn_blocking` and is raced against
-//! `tokio::time::timeout_at(deadline)`, so the RPC aborts with
-//! `DEADLINE_EXCEEDED` (`CHECK_DEADLINE`) while the core keeps working.
+//! `core.check_deadline(requested)`, bounded again by the shared 80ms admission
+//! budget. Cancellation reaches the core while the worker permit remains held
+//! until actual computation ends. The runtime also bounds readers and streams
+//! before decoding and exposes the standard Health service on the local network.
 //!
 //! # Compression
 //!
@@ -92,6 +91,7 @@ use crate::api::auth::{AuthTokens, Scope};
 use crate::api::{CheckCore, InfoResponse};
 use crate::model::{self, ErrorCode};
 use std::collections::HashSet;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 use tonic::metadata::MetadataMap;
@@ -107,15 +107,53 @@ pub const REQUEST_ID_METADATA: &str = "x-textguard-request-id";
 /// gRPC deadline values are clamped to this so `Instant + Duration` cannot overflow.
 const MAX_GRPC_TIMEOUT: Duration = Duration::from_secs(24 * 60 * 60);
 
+#[derive(Clone, Default)]
+pub(crate) struct CheckAccounting(Arc<AtomicBool>);
+
+impl CheckAccounting {
+    pub(crate) fn claim(&self) -> bool {
+        !self.0.swap(true, Ordering::AcqRel)
+    }
+}
+
 /// The `imboy.textguard.v1.TextGuard` service over one [`CheckCore`].
 pub struct TextGuardSvc {
     core: Arc<dyn CheckCore>,
     tokens: Arc<AuthTokens>,
+    admission: crate::runtime::Admission,
+    metrics: Arc<crate::observability::Metrics>,
 }
 
 impl TextGuardSvc {
     pub fn new(core: Arc<dyn CheckCore>, tokens: Arc<AuthTokens>) -> Self {
-        Self { core, tokens }
+        Self::with_runtime(core, tokens, crate::runtime::Admission::default())
+    }
+
+    pub fn with_runtime(
+        core: Arc<dyn CheckCore>,
+        tokens: Arc<AuthTokens>,
+        admission: crate::runtime::Admission,
+    ) -> Self {
+        Self::observed(
+            core,
+            tokens,
+            admission,
+            Arc::new(crate::observability::Metrics::default()),
+        )
+    }
+
+    pub fn observed(
+        core: Arc<dyn CheckCore>,
+        tokens: Arc<AuthTokens>,
+        admission: crate::runtime::Admission,
+        metrics: Arc<crate::observability::Metrics>,
+    ) -> Self {
+        Self {
+            core,
+            tokens,
+            admission,
+            metrics,
+        }
     }
 
     /// Returns the small [`ErrorCode`] so call sites map it through
@@ -141,9 +179,19 @@ pub fn service_with_limits(
     core: Arc<dyn CheckCore>,
     tokens: Arc<AuthTokens>,
 ) -> crate::protocol::text_guard_server::TextGuardServer<TextGuardSvc> {
-    crate::protocol::text_guard_server::TextGuardServer::new(TextGuardSvc::new(core, tokens))
-        .max_decoding_message_size(MAX_MESSAGE_BYTES)
-        .max_encoding_message_size(MAX_MESSAGE_BYTES)
+    service_with_runtime(core, tokens, crate::runtime::Admission::default())
+}
+
+pub fn service_with_runtime(
+    core: Arc<dyn CheckCore>,
+    tokens: Arc<AuthTokens>,
+    admission: crate::runtime::Admission,
+) -> crate::protocol::text_guard_server::TextGuardServer<TextGuardSvc> {
+    crate::protocol::text_guard_server::TextGuardServer::new(TextGuardSvc::with_runtime(
+        core, tokens, admission,
+    ))
+    .max_decoding_message_size(MAX_MESSAGE_BYTES)
+    .max_encoding_message_size(MAX_MESSAGE_BYTES)
 }
 
 #[tonic::async_trait]
@@ -152,9 +200,23 @@ impl crate::protocol::text_guard_server::TextGuard for TextGuardSvc {
         &self,
         request: Request<crate::protocol::CheckTextRequest>,
     ) -> Result<Response<crate::protocol::CheckTextResponse>, Status> {
-        self.authorize(request.metadata())
-            .map_err(status_from_error)?;
-        let requested = grpc_timeout_deadline(request.metadata());
+        let accounting = request
+            .extensions()
+            .get::<CheckAccounting>()
+            .cloned()
+            .unwrap_or_default();
+        self.authorize(request.metadata()).map_err(|code| {
+            if accounting.claim() {
+                self.metrics
+                    .record_failure(crate::runtime::Transport::Grpc, code);
+            }
+            status_from_error(code)
+        })?;
+        let requested = request
+            .extensions()
+            .get::<Instant>()
+            .copied()
+            .or_else(|| grpc_timeout_deadline(request.metadata()));
         let request_id = request
             .get_ref()
             .request_id
@@ -162,17 +224,35 @@ impl crate::protocol::text_guard_server::TextGuard for TextGuardSvc {
             .filter(|value| crate::model::valid_identifier(value))
             .unwrap_or("")
             .to_owned();
-        let core_request = to_model_request(request.into_inner())
-            .map_err(|code| status_for_request(code, &request_id))?;
+        let core_request = to_model_request(request.into_inner()).map_err(|code| {
+            if accounting.claim() {
+                self.metrics
+                    .record_failure(crate::runtime::Transport::Grpc, code);
+            }
+            status_for_request(code, &request_id)
+        })?;
+        let core_request = Arc::new(core_request);
+        let measured = core_request.clone();
+        let started = Instant::now();
         let deadline = self.core.check_deadline(requested);
         let core = Arc::clone(&self.core);
-        let task = tokio::task::spawn_blocking(move || core.check(&core_request));
-        match tokio::time::timeout_at(deadline.into(), task).await {
-            Ok(Ok(Ok(response))) => Ok(Response::new(to_proto_response(response))),
-            Ok(Ok(Err(code))) => Err(status_for_request(code, &request_id)),
-            // the blocking task panicked: the core never produced a decision
-            Ok(Err(_join_error)) => Err(status_for_request(ErrorCode::InternalError, &request_id)),
-            Err(_elapsed) => Err(status_for_request(ErrorCode::CheckDeadline, &request_id)),
+        let result = self
+            .admission
+            .execute(deadline, move |token| {
+                core.check_cancellable(&core_request, &|| token.is_cancelled())
+            })
+            .await;
+        if accounting.claim() {
+            self.metrics.record_check(
+                &measured,
+                crate::runtime::Transport::Grpc,
+                started.elapsed(),
+                &result,
+            );
+        }
+        match result {
+            Ok(response) => Ok(Response::new(to_proto_response(response))),
+            Err(code) => Err(status_for_request(code, &request_id)),
         }
     }
 
@@ -351,7 +431,7 @@ fn error_code_name(code: ErrorCode) -> &'static str {
 }
 
 /// The full AC-058 mapping; see the module doc table for the rationale.
-fn status_from_error(code: ErrorCode) -> Status {
+pub(crate) fn status_from_error(code: ErrorCode) -> Status {
     status_for_request(code, "")
 }
 
@@ -393,7 +473,7 @@ fn status_for_request(code: ErrorCode, request_id: &str) -> Status {
 /// followed by `H`, `M`, `S`, `m`, `u` or `n`. Unparseable values yield `None`
 /// (treated as absent, like tonic's own transport), and the duration is
 /// clamped to 24h to keep `Instant` arithmetic overflow-free.
-fn parse_grpc_timeout(value: &str) -> Option<Duration> {
+pub(crate) fn parse_grpc_timeout(value: &str) -> Option<Duration> {
     let (digits, unit) = value.split_at(value.len().checked_sub(1)?);
     if digits.is_empty() || digits.len() > 8 || !digits.bytes().all(|byte| byte.is_ascii_digit()) {
         return None;

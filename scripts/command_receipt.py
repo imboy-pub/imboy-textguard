@@ -17,7 +17,7 @@ import time
 ALLOWED_ENV = frozenset({"PATH", "LANG", "LC_ALL", "TZ", "TMPDIR", "HOME",
                          "RUSTUP_HOME", "CARGO_HOME", "CARGO_TARGET_DIR",
                          "PYTHONDONTWRITEBYTECODE", "TEXTGUARD_CONTROL_TOOLS",
-                         "TEXTGUARD_FORK_ROOT", "TEXTGUARD_T2S_SOURCE"})
+                         "TEXTGUARD_FORK_ROOT", "TEXTGUARD_T2S_SOURCE", "TEXTGUARD_IMAGE"})
 
 
 def timestamp():

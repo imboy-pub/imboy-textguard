@@ -24,11 +24,24 @@ struct ManageState {
     state: Arc<RulesState>,
     tokens: Arc<AuthTokens>,
     receiving: Arc<tokio::sync::Semaphore>,
+    metrics: Arc<crate::observability::Metrics>,
 }
 
 /// Build the management router for assembly by `main` / T19. Mount it on
 /// the internal network only.
 pub fn router(state: Arc<RulesState>, tokens: Arc<AuthTokens>) -> axum::Router {
+    router_observed(
+        state,
+        tokens,
+        Arc::new(crate::observability::Metrics::default()),
+    )
+}
+
+pub fn router_observed(
+    state: Arc<RulesState>,
+    tokens: Arc<AuthTokens>,
+    metrics: Arc<crate::observability::Metrics>,
+) -> axum::Router {
     axum::Router::new()
         .route(
             ACTIVE_PATH,
@@ -40,6 +53,7 @@ pub fn router(state: Arc<RulesState>, tokens: Arc<AuthTokens>) -> axum::Router {
             state,
             tokens,
             receiving: Arc::new(tokio::sync::Semaphore::new(1)),
+            metrics,
         })
 }
 
@@ -67,6 +81,17 @@ async fn get_active(State(state): State<ManageState>, headers: HeaderMap) -> Res
 }
 
 async fn put_active(State(state): State<ManageState>, request: Request) -> Response {
+    let started = std::time::Instant::now();
+    let metrics = state.metrics.clone();
+    let response = publish(state, request).await;
+    metrics.record_publish(
+        started.elapsed(),
+        response.extensions().get::<ErrorCode>().copied(),
+    );
+    response
+}
+
+async fn publish(state: ManageState, request: Request) -> Response {
     let deadline = tokio::time::Instant::now() + std::time::Duration::from_secs(60);
     if let Err(error) = authorize(&state.tokens, request.headers()) {
         return error_response(error, false);
@@ -230,7 +255,9 @@ fn publish_error_response(error: &PublishError, precondition_missing: bool) -> R
             "retryable": super::error::retryable(code),
         }
     });
-    (status_for(code, precondition_missing), Json(body)).into_response()
+    let mut response = (status_for(code, precondition_missing), Json(body)).into_response();
+    response.extensions_mut().insert(code);
+    response
 }
 
 fn error_response(code: ErrorCode, precondition_missing: bool) -> Response {
@@ -241,7 +268,9 @@ fn error_response(code: ErrorCode, precondition_missing: bool) -> Response {
             "retryable": super::error::retryable(code),
         }
     });
-    (status_for(code, precondition_missing), Json(body)).into_response()
+    let mut response = (status_for(code, precondition_missing), Json(body)).into_response();
+    response.extensions_mut().insert(code);
+    response
 }
 
 /// Management-plane status table; see the module documentation.

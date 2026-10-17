@@ -2,6 +2,10 @@
   "schema_version": 1,
   "commands_file": "runner/commands.json",
   "tasks": {
+    "T17": {
+      "commands": ["t17-runtime", "t17-image"],
+      "acceptance": ["AC-087", "AC-088", "AC-089", "AC-090"]
+    },
     "T04": {
       "commands": [
         "runner-selftest",

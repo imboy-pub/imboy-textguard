@@ -251,13 +251,29 @@
         "cargo",
         "test",
         "--locked",
+        "--lib",
         "--test",
-        "runtime_contract"
+        "runtime_wiring",
+        "--test",
+        "runtime_process",
+        "--test",
+        "observability_contract",
+        "--test",
+        "runtime_contract",
+        "--",
+        "--test-threads=1"
       ],
       "discovery_argv": [
         "cargo",
         "test",
         "--locked",
+        "--lib",
+        "--test",
+        "runtime_wiring",
+        "--test",
+        "runtime_process",
+        "--test",
+        "observability_contract",
         "--test",
         "runtime_contract",
         "--",
@@ -280,9 +296,22 @@
       "expected_exit": 0,
       "acceptance": [
         "AC-087",
-        "AC-088"
+        "AC-088",
+        "AC-089",
+        "AC-090"
       ],
-      "scope": "Runtime component only; shared limits and actual blocking-task lifetime. Real HTTP/gRPC, TLS, privacy, and deployment remain T17/T23 obligations."
+      "scope": "T17 component: shared admission and cancellation, real binary HTTP/gRPC, scoped secrets, metrics/privacy and health. Full TLS/fault/business integration remains T19/T23; capacity and soak remain T24."
+    },
+    "t17-image": {
+      "argv": ["python3", "-B", "tests/deploy/image_smoke.py"],
+      "discovery_argv": ["python3", "-B", "tests/deploy/image_smoke.py", "--list"],
+      "cwd": ".",
+      "environment_allowlist": ["PATH", "HOME", "TEXTGUARD_IMAGE"],
+      "timeout_seconds": 180,
+      "count_format": "unittest",
+      "expected_exit": 0,
+      "acceptance": ["AC-090"],
+      "scope": "Real Linux container from immutable image ID; nonroot, readonly root, actual quotas and volume, private secret files, health and graceful SIGTERM. No production authorization or final T23 TLS acceptance."
     },
     "t08-matcher": {
       "argv": [

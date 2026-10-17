@@ -1,0 +1,24 @@
+services:
+  textguard:
+    image: ${TEXTGUARD_IMAGE:?set an immutable locally verified image digest}
+    network_mode: host
+    user: "10001:10001"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    cpus: 2
+    mem_limit: 2g
+    pids_limit: 64
+    stop_grace_period: 70s
+    environment:
+      TEXTGUARD_DATA_DIR: /var/lib/textguard
+      TEXTGUARD_CHECK_SECRET_FILE: /run/secrets/check
+      TEXTGUARD_PUBLISH_SECRET_FILE: /run/secrets/publish
+    volumes:
+      - rules:/var/lib/textguard
+      - secrets:/run/secrets:ro
+volumes:
+  rules:
+  secrets:
+    external: true
+    name: ${TEXTGUARD_SECRET_VOLUME:?set a pre-provisioned private secret volume}

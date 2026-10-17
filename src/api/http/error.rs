@@ -27,7 +27,6 @@ impl ApiError {
         self
     }
 
-    #[cfg(test)]
     pub(super) fn code(&self) -> ErrorCode {
         self.code
     }

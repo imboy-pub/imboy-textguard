@@ -37,9 +37,7 @@
 //! `Content-Encoding` other than absent/`identity` is a protocol error and the
 //! service never decompresses.
 //!
-//! Wiring: handlers call [`crate::api::CheckCore::check`] directly. Runtime
-//! admission (semaphores, deadlines) is T19's assembly job; this module only
-//! owns transport parsing, size bounds and credential scope checks.
+//! Every parsed check uses the shared runtime admission and cancellation budget.
 
 pub mod manage;
 
@@ -58,6 +56,28 @@ pub const MAX_BODY_BYTES: usize = 256 * 1024;
 
 /// Build the HTTP data-plane router for assembly by `main` / T19.
 pub fn router(core: Arc<dyn CheckCore>, tokens: Arc<AuthTokens>) -> axum::Router {
+    router_with_runtime(core, tokens, crate::runtime::Admission::default())
+}
+
+pub fn router_with_runtime(
+    core: Arc<dyn CheckCore>,
+    tokens: Arc<AuthTokens>,
+    admission: crate::runtime::Admission,
+) -> axum::Router {
+    router_observed(
+        core,
+        tokens,
+        admission,
+        Arc::new(crate::observability::Metrics::default()),
+    )
+}
+
+pub fn router_observed(
+    core: Arc<dyn CheckCore>,
+    tokens: Arc<AuthTokens>,
+    admission: crate::runtime::Admission,
+    metrics: Arc<crate::observability::Metrics>,
+) -> axum::Router {
     axum::Router::new()
         .route(
             "/v1/check",
@@ -66,5 +86,5 @@ pub fn router(core: Arc<dyn CheckCore>, tokens: Arc<AuthTokens>) -> axum::Router
         .route("/v1/info", get(handlers::info_handler))
         .route("/health/live", get(handlers::live_handler))
         .route("/health/ready", get(handlers::ready_handler))
-        .with_state(handlers::HttpState::new(core, tokens))
+        .with_state(handlers::HttpState::new(core, tokens, admission, metrics))
 }

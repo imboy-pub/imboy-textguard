@@ -29,6 +29,16 @@ pub struct InfoResponse {
 /// into an allow decision.
 pub trait CheckCore: Send + Sync {
     fn check(&self, request: &CheckRequest) -> Result<CheckResponse, ErrorCode>;
+    fn check_cancellable(
+        &self,
+        request: &CheckRequest,
+        cancelled: &(dyn Fn() -> bool + Sync),
+    ) -> Result<CheckResponse, ErrorCode> {
+        if cancelled() {
+            return Err(ErrorCode::CheckDeadline);
+        }
+        self.check(request)
+    }
     fn info(&self) -> InfoResponse;
     fn ready(&self) -> bool;
 

@@ -3,6 +3,7 @@ pub mod engine;
 pub mod matcher;
 pub mod model;
 pub mod normalize;
+pub mod observability;
 pub mod policy;
 pub mod rules;
 pub mod runtime;

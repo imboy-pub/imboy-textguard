@@ -595,35 +595,38 @@ async fn grpc_timeout_deadline_aborts_while_the_core_is_still_working() {
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn service_race_honors_an_unclamped_grpc_timeout() {
-    // Direct trait call: no transport layers race the deadline here, so the
-    // requested 150ms is used verbatim and the abort is purely ours.
-    let core = MockCore::sleeping(Duration::from_secs(2), None);
-    let service = TextGuardSvc::new(
-        core.clone(),
-        Arc::new(AuthTokens::new(CHECK_TOKEN, PUBLISH_TOKEN)),
-    );
-    let mut request = authorized_request(
-        Some("req-slow"),
-        Some(1),
-        vec![field(Some("body"), Some("hello"))],
-    );
-    request
-        .metadata_mut()
-        .insert("grpc-timeout", "150m".parse().unwrap());
-    let started = Instant::now();
-    let error = TextGuardService::check_text(&service, request)
-        .await
-        .unwrap_err();
-    let elapsed = started.elapsed();
-    assert_eq!(error.code(), Code::DeadlineExceeded, "{error:?}");
-    assert_eq!(error_code_of(&error), "CHECK_DEADLINE");
-    assert!(elapsed < Duration::from_secs(1), "abort took {elapsed:?}");
-    assert!(
-        elapsed >= Duration::from_millis(100),
-        "abort took {elapsed:?}"
-    );
-    assert!(!core.finished.load(Ordering::SeqCst));
+async fn service_race_honors_requested_deadline_and_global_check_budget() {
+    for (timeout, minimum, maximum) in [("20m", 10, 70), ("150m", 60, 130)] {
+        let core = MockCore::sleeping(Duration::from_secs(2), None);
+        let service = TextGuardSvc::new(
+            core.clone(),
+            Arc::new(AuthTokens::new(CHECK_TOKEN, PUBLISH_TOKEN)),
+        );
+        let mut request = authorized_request(
+            Some("req-slow"),
+            Some(1),
+            vec![field(Some("body"), Some("hello"))],
+        );
+        request
+            .metadata_mut()
+            .insert("grpc-timeout", timeout.parse().unwrap());
+        let started = Instant::now();
+        let error = TextGuardService::check_text(&service, request)
+            .await
+            .unwrap_err();
+        let elapsed = started.elapsed();
+        assert_eq!(error.code(), Code::DeadlineExceeded, "{error:?}");
+        assert_eq!(error_code_of(&error), "CHECK_DEADLINE");
+        assert!(
+            elapsed < Duration::from_millis(maximum),
+            "abort took {elapsed:?}"
+        );
+        assert!(
+            elapsed >= Duration::from_millis(minimum),
+            "abort took {elapsed:?}"
+        );
+        assert!(!core.finished.load(Ordering::SeqCst));
+    }
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
