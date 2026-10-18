@@ -124,11 +124,11 @@ class Capacity(unittest.TestCase):
 
     @classmethod
     def write_datasets(cls, datasets):
-        # 100 distinct update rulesets (AC-095): each appends one unique
-        # neutral literal (a word present in no case text) so every
-        # package is a genuinely different digest with real compile+swap
-        # work, while the data-plane oracle expectations stay valid for
-        # the whole hour (severity flips would invalidate them)
+        # 100 distinct update rulesets (AC-095): each MUTATES the last
+        # literal's word (present in no case text) so every package is a
+        # genuinely different digest with real compile+swap work at
+        # exactly 50,000 rules, while the data-plane oracle expectations
+        # stay valid for the whole hour
         base = json.loads((datasets / "B1-50000.rules.json").read_text())
         # mutate the LAST literal's word instead of appending: the package
         # must stay at exactly 50,000 rules (MAX_CANONICAL_RULES), and the
@@ -690,7 +690,7 @@ class Capacity(unittest.TestCase):
              "oom_at_boot": oom_at_boot,
              "memory_cap": "64m", "load": load_name}, indent=1))
         self.assertTrue(state["OOMKilled"] or oom_observed,
-                        "the 256 MiB starved twin under B1 load must be OOM-killed by the kernel")
+                        "the 64 MiB starved twin must be OOM-killed by the kernel")
         self.docker("rm", "-f", starved)
         type(self).containers.remove(starved)
         # normal-quota restart recovers ACTIVE and serves clean traffic
