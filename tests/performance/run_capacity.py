@@ -130,12 +130,14 @@ class Capacity(unittest.TestCase):
         # work, while the data-plane oracle expectations stay valid for
         # the whole hour (severity flips would invalidate them)
         base = json.loads((datasets / "B1-50000.rules.json").read_text())
+        # mutate the LAST literal's word instead of appending: the package
+        # must stay at exactly 50,000 rules (MAX_CANONICAL_RULES), and the
+        # last literal's word appears in no case text (cases only reference
+        # word(index) for index < 2500 and words 0..19), so the data-plane
+        # oracle stays valid while every package is a distinct digest
         for index in range(100):
             variant = json.loads(json.dumps(base))
-            variant["literals"].append({
-                "id": str(900000 + index), "word": f"演练版本标记{index:03d}",
-                "category": "soak", "severity": "low", "scenes": ["profile_field"],
-                "aliases": [], "gap": {"enabled": False, "action": "review"}})
+            variant["literals"][-1]["word"] = f"演练版本标记{index:03d}"
             data = json.dumps(variant, ensure_ascii=False, separators=(",", ":"))
             (datasets / f"soak-update-{index:03}.rules.json").write_text(data)
         # 32 KiB requests spread across four 8 KiB fields (AC-094): the
@@ -612,7 +614,7 @@ class Capacity(unittest.TestCase):
         type(self).containers.remove(self.server)
         starved = self.prefix + "-starved"
         self.docker("run", "-d", "--name", starved, "--label", f"imboy.task={self.prefix}",
-                    "--network", "none", "--cpus", "2", "--cpuset-cpus", "0,1", "--memory", "256m",
+                    "--network", "none", "--cpus", "2", "--cpuset-cpus", "0,1", "--memory", "192m",
                     "--pids-limit", "64", "--read-only", "--cap-drop", "ALL",
                     "--mount", f"type=volume,src={self.data_volume},dst=/perf,readonly",
                     "--mount", f"type=volume,src={self.rules_volume},dst=/var/lib/textguard",
@@ -639,22 +641,27 @@ class Capacity(unittest.TestCase):
                     "--mount", f"type=volume,src={self.data_volume},dst=/perf",
                     "--entrypoint", "/usr/local/bin/textguard-perf",
                     self.image, "/perf/jobs/" + load_name + ".json")
-        self.docker("start", client, check=False)
+        execution = self.docker("start", "--attach", client, check=False, timeout=180)
+        logs = self.docker("logs", client, check=False, save="starved-load-logs.txt")
         oom_observed = False
-        deadline = time.monotonic() + 120
+        deadline = time.monotonic() + 180
         while time.monotonic() < deadline:
             state = json.loads(self.docker("inspect", starved, check=False).stdout)[0]["State"]
             if not state["Running"] or state["OOMKilled"]:
                 oom_observed = state["OOMKilled"]
                 break
             time.sleep(1)
+        self.docker("cp", client + f":/perf/results/{load_name}.jsonl",
+                    str(self.evidence / "starved-load.jsonl"), check=False)
         # the load client dies with the shared network namespace
         self.docker("rm", "-f", client, check=False)
+        (self.evidence / "starved-load-receipt.json").write_text(json.dumps(
+            {"attach_exit": execution.returncode, "logs_tail": logs.stdout[-400:]}, indent=1))
         state = json.loads(self.docker("inspect", starved, check=False).stdout)[0]["State"]
         (self.evidence / "oom-kill-state.json").write_text(json.dumps(
             {"container": starved, "oom_killed": state["OOMKilled"],
              "exit_code": state["ExitCode"], "observed_before_kill": oom_observed,
-             "memory_cap": "256m", "load": load_name}, indent=1))
+             "memory_cap": "192m", "load": load_name}, indent=1))
         self.assertTrue(state["OOMKilled"] or oom_observed,
                         "the 256 MiB starved twin under B1 load must be OOM-killed by the kernel")
         self.docker("rm", "-f", starved)
