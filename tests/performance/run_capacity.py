@@ -618,7 +618,7 @@ class Capacity(unittest.TestCase):
         type(self).containers.remove(self.server)
         starved = self.prefix + "-starved"
         self.docker("run", "-d", "--name", starved, "--label", f"imboy.task={self.prefix}",
-                    "--network", "none", "--cpus", "2", "--cpuset-cpus", "0,1", "--memory", "192m",
+                    "--network", "none", "--cpus", "2", "--cpuset-cpus", "0,1", "--memory", "64m",
                     "--pids-limit", "64", "--read-only", "--cap-drop", "ALL",
                     "--mount", f"type=volume,src={self.data_volume},dst=/perf,readonly",
                     "--mount", f"type=volume,src={self.rules_volume},dst=/var/lib/textguard",
@@ -676,7 +676,7 @@ class Capacity(unittest.TestCase):
         (self.evidence / "oom-kill-state.json").write_text(json.dumps(
             {"container": starved, "oom_killed": state["OOMKilled"],
              "exit_code": state["ExitCode"], "observed_before_kill": oom_observed,
-             "memory_cap": "192m", "load": load_name}, indent=1))
+             "memory_cap": "64m", "load": load_name}, indent=1))
         self.assertTrue(state["OOMKilled"] or oom_observed,
                         "the 256 MiB starved twin under B1 load must be OOM-killed by the kernel")
         self.docker("rm", "-f", starved)
