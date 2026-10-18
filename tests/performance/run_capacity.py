@@ -608,6 +608,10 @@ class Capacity(unittest.TestCase):
     # ----------------------------------------------------------------- AC-096
 
     def test_ac096_oom_kill_recovery(self):
+        # the twin must inherit a real ACTIVE package (fresh volumes in a
+        # standalone run have none): publish B1 first so the starved twin
+        # restores and scans the 50k snapshot under its memory cap
+        self.publish_rules("B1")
         generation_before = self.active_generation()
         self.docker("stop", "--time", "70", self.server)
         self.docker("rm", "-f", self.server)
