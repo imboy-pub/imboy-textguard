@@ -398,6 +398,19 @@ class Capacity(unittest.TestCase):
 
     # --------------------------------------------------------------- AC-091/092
 
+    @classmethod
+    def ensure_writer(cls):
+        helper = cls.prefix + "-writer"
+        if helper not in cls.containers:
+            cls.docker("create", "--name", helper, "--label", f"imboy.task={cls.prefix}",
+                       "--network", "none", "--cpus", "1", "--memory", "256m", "--read-only",
+                       "--cap-drop", "ALL",
+                       "--mount", f"type=volume,src={cls.data_volume},dst=/perf",
+                       "--entrypoint", "sleep", cls.image, "36000")
+            cls.containers.append(helper)
+            cls.docker("start", helper)
+        return helper
+
     def publish_rules(self, profile):
         """Publish the profile's frozen ruleset (idempotent across re-runs)."""
         job = {"mode": "publish", "output": f"/perf/results/pub-{profile}.jsonl",
@@ -406,20 +419,7 @@ class Capacity(unittest.TestCase):
                "secret_file": "/perf/publish", "seconds": 5, "qps": 1,
                "concurrency": 1, "arrival": "closed"}
         name = f"pub-{profile}"
-        with tempfile.TemporaryDirectory() as tmp:
-            path = Path(tmp) / (name + ".json")
-            path.write_text(json.dumps(job))
-            self.docker("cp", str(path), self.prefix + "-init2:/dev/null", check=False)
-        # write through a helper container sharing the data volume
-        helper = self.prefix + "-writer"
-        if helper not in self.containers:
-            self.docker("create", "--name", helper, "--label", f"imboy.task={self.prefix}",
-                        "--network", "none", "--cpus", "1", "--memory", "256m", "--read-only",
-                        "--cap-drop", "ALL",
-                        "--mount", f"type=volume,src={self.data_volume},dst=/perf",
-                        "--entrypoint", "sleep", self.image, "36000")
-            type(self).containers.append(helper)
-            self.docker("start", helper)
+        helper = self.ensure_writer()
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / (name + ".json")
             path.write_text(json.dumps(job))
@@ -644,7 +644,7 @@ class Capacity(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / (load_name + ".json")
             path.write_text(json.dumps(job))
-            self.docker("cp", str(path), self.prefix + "-writer:/perf/jobs/" + load_name + ".json")
+            self.docker("cp", str(path), self.ensure_writer() + ":/perf/jobs/" + load_name + ".json")
         client = self.prefix + "-" + load_name
         self.docker("create", "--name", client, "--label", f"imboy.task={self.prefix}",
                     "--network", "container:" + starved, "--cpus", "1", "--cpuset-cpus", "2,3",
