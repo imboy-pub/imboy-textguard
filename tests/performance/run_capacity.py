@@ -621,6 +621,17 @@ class Capacity(unittest.TestCase):
                     "-e", "TEXTGUARD_CHECK_SECRET_FILE=/perf/check",
                     "-e", "TEXTGUARD_PUBLISH_SECRET_FILE=/perf/publish", self.image)
         type(self).containers.append(starved)
+        # wait for the twin to become live before driving load (the
+        # generator connects both transports eagerly and panics on a
+        # refused connection)
+        deadline = time.monotonic() + 20
+        while time.monotonic() < deadline:
+            if self.docker("exec", starved, "/usr/local/bin/imboy-textguard",
+                           "--healthcheck", check=False).returncode == 0:
+                break
+            time.sleep(0.1)
+        else:
+            raise RuntimeError("starved twin not live")
         # drive real load through the starved twin: a B1 scan under the
         # normal quota peaked around 375 MiB RSS, far above the 256 MiB
         # cap, so the cgroup must OOM-kill the service process
