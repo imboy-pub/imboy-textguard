@@ -404,6 +404,14 @@ impl RulesState {
             &self.dir,
             &[digest.as_str(), previous.as_deref().unwrap_or("")],
         );
+        // The compile transiently allocates hundreds of MiB; under
+        // sustained connection load glibc arenas retain part of every
+        // publication's freed scratch (T24 soak measured ~25 MiB kept
+        // per update, ratcheting to 1.67 GiB/hour and stopping exactly
+        // when publications stop). Return free heap to the OS after the
+        // swap so the steady RSS tracks real live data, not the
+        // publication high-water mark.
+        trim_allocator();
         Ok(PublishReceipt {
             revision: manifest.package_digest.clone(),
             generation,
@@ -436,6 +444,19 @@ fn restore(
         manifest,
     ))
 }
+
+/// Release glibc's free-but-retained arena pages after a publication.
+/// No-op on non-glibc/non-Linux targets; on Linux it is a direct
+/// `malloc_trim(0)` (the libc crate is already a dependency).
+#[cfg(target_os = "linux")]
+fn trim_allocator() {
+    // SAFETY: malloc_trim(0) only releases free heap memory; it is
+    // thread-safe and cannot fail the process.
+    unsafe { libc::malloc_trim(0) };
+}
+
+#[cfg(not(target_os = "linux"))]
+fn trim_allocator() {}
 
 fn build_error_code(error: BuildError) -> ErrorCode {
     match error {
