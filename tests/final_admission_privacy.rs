@@ -514,37 +514,6 @@ async fn ac088_client_cancellation_releases_permits_with_real_work() {
     for driver in drivers {
         driver.await.unwrap();
     }
-    {
-        let (_, report) = http(
-            process.manage,
-            "GET",
-            "/metrics",
-            "",
-            None,
-            "",
-            Duration::from_secs(3),
-        )
-        .await
-        .unwrap();
-        let interesting: Vec<&str> = report
-            .lines()
-            .filter(|line| {
-                line.contains("requests_total")
-                    || line.contains("errors_total")
-                    || line.contains("running")
-                    || line.contains("queued")
-                    || line.contains("rejected")
-            })
-            .collect();
-        eprintln!(
-            "DIAG after load:
-{}",
-            interesting.join(
-                "
-"
-            )
-        );
-    }
 
     // wait for the concurrent poller to observe the drain: two samples,
     // 80 ms apart, both showing all three gauges at zero
