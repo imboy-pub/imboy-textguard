@@ -34,10 +34,12 @@ jobs:
           python3 -m py_compile tools/lexicon/build_review_lexicon.py
       - name: Collect three rounds and validate
         run: |
+          set -o pipefail
+          mkdir -p lexicon-validation-evidence
           python3 -m pip install jsonschema==4.23.0
-          python3 tools/lexicon/build_review_lexicon.py --fetch --cache "$RUNNER_TEMP/lexicon-cache"
-          python3 -m unittest discover -s tools/lexicon -p 'test_*.py' -v
-          python3 tools/lexicon/validate_review_lexicon.py
+          python3 tools/lexicon/build_review_lexicon.py --fetch --cache "$RUNNER_TEMP/lexicon-cache" | tee lexicon-validation-evidence/collection.json
+          python3 -m unittest discover -s tools/lexicon -p 'test_*.py' -v 2>&1 | tee lexicon-validation-evidence/python-tests.log
+          python3 tools/lexicon/validate_review_lexicon.py | tee lexicon-validation-evidence/static-validation.json
           python3 tools/lexicon/build_review_lexicon.py --cache "$RUNNER_TEMP/lexicon-cache" --out "$RUNNER_TEMP/reproduced"
           for path in COUNTS.json words rulesets provenance licenses; do diff -qr "data/dictionaries/review_sources_20261020/$path" "$RUNNER_TEMP/reproduced/$path"; done
       - uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9
@@ -47,16 +49,24 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
       - name: Format and validate real Rust snapshot and publication
         run: |
+          set -o pipefail
           cargo fmt --all
-          cargo clippy --locked --all-targets -- -D warnings
-          cargo test --locked --test review_lexicon
-          cargo test --locked
-          cargo build --locked --release
+          cargo clippy --locked --all-targets -- -D warnings 2>&1 | tee lexicon-validation-evidence/clippy.log
+          cargo test --locked --test review_lexicon 2>&1 | tee lexicon-validation-evidence/lexicon-rust-tests.log
+          cargo test --locked 2>&1 | tee lexicon-validation-evidence/full-cargo-tests.log
+          cargo build --locked --release 2>&1 | tee lexicon-validation-evidence/release-build.log
       - name: Commit verified data only to the authorized PR branch
         run: |
           test "$GITHUB_REF_NAME" = feat/review-lexicon-three-rounds
           test "$(git ls-remote origin refs/heads/feat/review-lexicon-three-rounds | cut -f1)" = "$GITHUB_SHA"
-          git diff -w --exit-code -- src/runtime/server.rs
+          python3 - <<'PY'
+          import re, subprocess
+          from pathlib import Path
+          name = 'src/runtime/server.rs'
+          before = subprocess.check_output(['git', 'show', 'HEAD:' + name]).decode()
+          after = Path(name).read_text()
+          assert re.sub(r'\s+', '', before) == re.sub(r'\s+', '', after), 'Runtime change beyond rustfmt'
+          PY
           git add -- data/dictionaries/review_sources_20261020 tools/lexicon/build_review_lexicon.py tests/review_lexicon.rs src/runtime/server.rs tests/bundled_seed.rs
           git diff --cached --name-only
           if ! git diff --cached --quiet; then
@@ -73,6 +83,9 @@ jobs:
           path: |
             data/dictionaries/review_sources_20261020/
             tools/lexicon/
+            !tools/lexicon/__pycache__/**
             tests/review_lexicon.rs
+            schemas/ruleset.schema.json
+            lexicon-validation-evidence/
           if-no-files-found: error
           retention-days: 7
