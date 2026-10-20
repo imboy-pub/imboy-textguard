@@ -28,3 +28,15 @@ cargo run --locked --release
 两种检测协议共享worker/队列和80ms预算。容器、TLS gateway、指标与退出说明见 `deploy/README.md`。
 T17组件通过不代表真实Erlang闭环、Linux容量和完整故障验收完成。
 公开投稿与生产部署未获授权。
+
+## 许可证
+
+本项目采用[木兰宽松许可证，第2版](http://license.coscl.org.cn/MulanPSL2)（Mulan PSL v2）授权，
+SPDX 标识符 `MulanPSL-2.0`，全文见仓库根目录 `LICENSE`。该许可证为中英文双语，
+两版具有同等法律效力，如有冲突以中文版为准。
+
+第三方依赖各自保留原有许可证（均为 MIT、Apache-2.0、BSD 等宽松许可，无 copyleft 传染）；
+`data/` 与 `tests/oracle/` 下的 Unicode 数据文件遵循其自带的 Unicode 许可声明。
+
+IMBoy 生态各仓许可证相互独立：Flutter 客户端采用木兰宽松许可证第 2 版，
+后端与管理后台采用 BSL 1.1（含使用范围限制）。具体使用须阅读对应仓库的 `LICENSE`。

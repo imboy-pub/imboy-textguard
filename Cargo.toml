@@ -3,6 +3,7 @@ name = "imboy-textguard"
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.90.0"
+license = "MulanPSL-2.0"
 publish = false
 build = "build.rs"
 
