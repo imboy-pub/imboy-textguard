@@ -1,0 +1,848 @@
+{
+  "schema_version": 1,
+  "normalization_id": "imboy-base-v1",
+  "t2s_table_id": "opencc-1.1.9-single-v1",
+  "limit_profile_id": "mvp-default-v1",
+  "semantics_by_scene": {
+    "channel_message": "compat-v1",
+    "moment_post": "compat-v1",
+    "profile_field": "compat-v1"
+  },
+  "allow_empty": false,
+  "literals": [
+    {
+      "id": "900000001",
+      "word": "招嫖服务",
+      "category": "sexual",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000002",
+      "word": "提供色情服务",
+      "category": "sexual",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000003",
+      "word": "上门卖淫",
+      "category": "sexual",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000004",
+      "word": "组织卖淫",
+      "category": "sexual",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000005",
+      "word": "色情视频售卖",
+      "category": "sexual",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000006",
+      "word": "出售淫秽视频",
+      "category": "sexual",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000007",
+      "word": "未成年人色情交易",
+      "category": "sexual",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000008",
+      "word": "非法色情直播",
+      "category": "sexual",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000009",
+      "word": "付费裸聊诈骗",
+      "category": "sexual",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000010",
+      "word": "淫秽视频传播",
+      "category": "sexual",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000011",
+      "word": "色情资源贩卖",
+      "category": "sexual",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000012",
+      "word": "组织色情交易",
+      "category": "sexual",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000013",
+      "word": "招募卖淫人员",
+      "category": "sexual",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000014",
+      "word": "色情直播招募",
+      "category": "sexual",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000015",
+      "word": "出售毒品",
+      "category": "drugs",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000016",
+      "word": "购买毒品渠道",
+      "category": "drugs",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000017",
+      "word": "贩卖毒品",
+      "category": "drugs",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000018",
+      "word": "毒品交易群",
+      "category": "drugs",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000019",
+      "word": "招募运毒人员",
+      "category": "drugs",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000020",
+      "word": "代购违禁毒品",
+      "category": "drugs",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000021",
+      "word": "毒品送货上门",
+      "category": "drugs",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000022",
+      "word": "出售冰毒",
+      "category": "drugs",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000023",
+      "word": "贩卖海洛因",
+      "category": "drugs",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000024",
+      "word": "贩卖可卡因",
+      "category": "drugs",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000025",
+      "word": "贩卖摇头丸",
+      "category": "drugs",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000026",
+      "word": "毒品交易担保",
+      "category": "drugs",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000027",
+      "word": "招收毒品代理",
+      "category": "drugs",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000028",
+      "word": "提供吸毒场所",
+      "category": "drugs",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000029",
+      "word": "招募恐怖组织成员",
+      "category": "terrorism",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000030",
+      "word": "为恐怖活动筹资",
+      "category": "terrorism",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000031",
+      "word": "组织恐怖袭击",
+      "category": "terrorism",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000032",
+      "word": "宣扬恐怖袭击",
+      "category": "terrorism",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000033",
+      "word": "参与恐怖活动招募",
+      "category": "terrorism",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000034",
+      "word": "恐怖组织募捐",
+      "category": "terrorism",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000035",
+      "word": "招募自杀式袭击者",
+      "category": "terrorism",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000036",
+      "word": "鼓动恐怖袭击",
+      "category": "terrorism",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000037",
+      "word": "传播恐怖组织招募信息",
+      "category": "terrorism",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000038",
+      "word": "为恐怖组织募集资金",
+      "category": "terrorism",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000039",
+      "word": "组织针对平民的恐怖暴力",
+      "category": "terrorism",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000040",
+      "word": "宣扬针对平民的恐怖暴力",
+      "category": "terrorism",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000041",
+      "word": "威胁杀害候选人",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000042",
+      "word": "威胁袭击投票站",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000043",
+      "word": "暴力恐吓选民",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000044",
+      "word": "雇人破坏投票站",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000045",
+      "word": "冒充选举官员诈骗",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000046",
+      "word": "冒充政府人员骗取转账",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000047",
+      "word": "伪造政府通知骗取钱财",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000048",
+      "word": "组织针对政治活动者的暴力袭击",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000049",
+      "word": "威胁殴打政治异见者",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000050",
+      "word": "冒充公职人员收取费用",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000051",
+      "word": "以暴力威胁阻止投票",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "900000052",
+      "word": "威胁伤害参加合法集会者",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "channel_message",
+        "moment_post",
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    }
+  ],
+  "regex_rules": [],
+  "exceptions": []
+}
