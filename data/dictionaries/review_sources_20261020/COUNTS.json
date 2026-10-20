@@ -1,0 +1,105 @@
+{
+  "baseline_reconstructed": 1428,
+  "baseline_retained": 1414,
+  "baseline_safety_excluded": 14,
+  "rounds": [
+    {
+      "round": 1,
+      "source_ids": [
+        "ks_sex",
+        "ks_drug_excerpt",
+        "go_drug",
+        "go_extremist",
+        "go_incidents",
+        "go_sex",
+        "go_weapons",
+        "go_forgery",
+        "go_fraud"
+      ],
+      "observed_records": 13083,
+      "new_unique": {
+        "sexual": 101,
+        "drugs": 35,
+        "terrorism": 776,
+        "political_abuse": 6
+      },
+      "cumulative": {
+        "sexual": 739,
+        "drugs": 621,
+        "terrorism": 875,
+        "political_abuse": 97
+      }
+    },
+    {
+      "round": 2,
+      "source_ids": [
+        "houbb_tags"
+      ],
+      "observed_records": 43768,
+      "new_unique": {
+        "sexual": 887,
+        "drugs": 2299,
+        "terrorism": 2921,
+        "political_abuse": 77
+      },
+      "cumulative": {
+        "sexual": 1626,
+        "drugs": 2920,
+        "terrorism": 3796,
+        "political_abuse": 174
+      }
+    },
+    {
+      "round": 3,
+      "source_ids": [
+        "ks_tencent",
+        "ks_netease",
+        "ks_supplement",
+        "ks_weapons"
+      ],
+      "observed_records": 62555,
+      "new_unique": {
+        "sexual": 58,
+        "drugs": 160,
+        "terrorism": 116,
+        "political_abuse": 1
+      },
+      "cumulative": {
+        "sexual": 1684,
+        "drugs": 3080,
+        "terrorism": 3912,
+        "political_abuse": 175
+      }
+    }
+  ],
+  "counts": {
+    "drugs": 3080,
+    "political_abuse": 175,
+    "sexual": 1684,
+    "terrorism": 3912
+  },
+  "total": 8851,
+  "target_each": 10000,
+  "shortfall": {
+    "sexual": 8316,
+    "drugs": 6920,
+    "terrorism": 6088,
+    "political_abuse": 9825
+  },
+  "excluded_record_counts_not_unique_terms": {
+    "safety_privacy_or_identity_exclusion": 2846,
+    "no_selected_risk_signal": 79509,
+    "length": 1500,
+    "overbroad": 40,
+    "not_chinese": 24707,
+    "malformed_source_prefix": 9,
+    "separator_or_control": 9,
+    "source_pattern_not_literal": 801,
+    "benign_meta_topic": 1
+  },
+  "generated_terms": 0,
+  "business_accuracy": "NOT_MEASURED",
+  "id_policy": "tg-review-v2 hash; new distribution namespace, not IMBoy database IDs",
+  "default_bootstrap_changed": false,
+  "active_rules_changed": false
+}

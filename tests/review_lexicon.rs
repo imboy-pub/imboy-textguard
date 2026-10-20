@@ -30,7 +30,13 @@ fn request(text: &str, scene: Scene) -> CheckRequest {
 #[test]
 fn all_five_packages_compile_and_every_term_is_review_only_in_profile() {
     let mut total = 0;
-    for category in ["sexual", "drugs", "terrorism", "political_abuse", "all_categories"] {
+    for category in [
+        "sexual",
+        "drugs",
+        "terrorism",
+        "political_abuse",
+        "all_categories",
+    ] {
         let rules: RuleSet = serde_json::from_slice(&package(category)).unwrap();
         assert!(!rules.literals.is_empty());
         assert!(rules.regex_rules.is_empty());
@@ -42,7 +48,9 @@ fn all_five_packages_compile_and_every_term_is_review_only_in_profile() {
             assert_eq!(rule.scenes, vec![Scene::ProfileField]);
             assert!(rule.aliases.is_empty());
             assert!(!rule.gap.enabled);
-            let result = snapshot.check(&request(&rule.word, Scene::ProfileField), &|| false).unwrap();
+            let result = snapshot
+                .check(&request(&rule.word, Scene::ProfileField), &|| false)
+                .unwrap();
             assert_eq!(result.decision, Action::Review, "rule {}", rule.id);
             assert!(result.scan_complete);
             assert!(result.hits.iter().any(|hit| hit.rule_id == rule.id));
@@ -52,12 +60,25 @@ fn all_five_packages_compile_and_every_term_is_review_only_in_profile() {
         } else {
             assert_eq!(total, rules.literals.len());
             for scene in [Scene::ChannelMessage, Scene::MomentPost] {
-                let result = snapshot.check(&request(&rules.literals[0].word, scene), &|| false).unwrap();
+                let result = snapshot
+                    .check(&request(&rules.literals[0].word, scene), &|| false)
+                    .unwrap();
                 assert_eq!(result.decision, Action::Allow);
                 assert!(result.hits.is_empty());
             }
-            for text in ["李小明", "张三", "清风明月", "中文学习小组", "药物安全教育", "新闻阅读", "普通政治讨论", "政府工作报告"] {
-                let result = snapshot.check(&request(text, Scene::ProfileField), &|| false).unwrap();
+            for text in [
+                "李小明",
+                "张三",
+                "清风明月",
+                "中文学习小组",
+                "药物安全教育",
+                "新闻阅读",
+                "普通政治讨论",
+                "政府工作报告",
+            ] {
+                let result = snapshot
+                    .check(&request(text, Scene::ProfileField), &|| false)
+                    .unwrap();
                 assert_eq!(result.decision, Action::Allow);
             }
         }
@@ -69,7 +90,10 @@ fn full_ruleset_publishes_and_recovers_without_changing_bootstrap() {
     let dir = std::env::temp_dir().join(format!(
         "textguard-lexicon-{}-{}",
         std::process::id(),
-        std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos()
     ));
     let bytes = package("all_categories");
     let expected: RuleSet = serde_json::from_slice(&bytes).unwrap();
@@ -83,9 +107,19 @@ fn full_ruleset_publishes_and_recovers_without_changing_bootstrap() {
     let restored = RulesState::load(&dir, table).unwrap();
     assert!(restored.ready());
     assert_eq!(restored.current().unwrap().revision(), receipt.revision);
-    assert_eq!(restored.current().unwrap().counts().canonical, expected.literals.len());
+    assert_eq!(
+        restored.current().unwrap().counts().canonical,
+        expected.literals.len()
+    );
     drop(restored);
     std::fs::remove_dir_all(dir).unwrap();
-    let seed: RuleSet = serde_json::from_slice(include_bytes!("../data/dictionaries/default_review_seed.json")).unwrap();
-    assert_eq!(seed.literals.len(), 52, "this PR must not silently replace the bootstrap");
+    let seed: RuleSet = serde_json::from_slice(include_bytes!(
+        "../data/dictionaries/default_review_seed.json"
+    ))
+    .unwrap();
+    assert_eq!(
+        seed.literals.len(),
+        52,
+        "this PR must not silently replace the bootstrap"
+    );
 }

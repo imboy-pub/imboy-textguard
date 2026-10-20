@@ -113,6 +113,12 @@ def constraint(word: str, *, baseline: bool = False) -> str | None:
         return 'not_chinese'
     if EXCLUDE.search(word):
         return 'safety_privacy_or_identity_exclusion'
+    if any(ord(c) in (42, 124, 94, 36, 60, 62, 34, 123, 125, 91, 93, 92) for c in word):
+        return 'source_pattern_not_literal'
+    if re.search(r'^(?:毛|操)(?=色情|淫秽|迷药|冰毒|海洛因|大麻|毒品)', word):
+        return 'malformed_source_prefix'
+    if word == '色情词':
+        return 'benign_meta_topic'
     if word in BARE:
         return 'overbroad'
     return None

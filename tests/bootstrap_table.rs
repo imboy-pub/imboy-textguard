@@ -24,8 +24,12 @@ impl Drop for IsolatedProcess {
 fn ready_status(address: SocketAddr) -> Option<u16> {
     let mut stream = TcpStream::connect_timeout(&address, Duration::from_millis(100)).ok()?;
     stream.set_read_timeout(Some(Duration::from_secs(1))).ok()?;
-    stream.set_write_timeout(Some(Duration::from_secs(1))).ok()?;
-    stream.write_all(b"GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n").ok()?;
+    stream
+        .set_write_timeout(Some(Duration::from_secs(1)))
+        .ok()?;
+    stream
+        .write_all(b"GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n")
+        .ok()?;
     let mut response = String::new();
     stream.take(4096).read_to_string(&mut response).ok()?;
     response.split_whitespace().nth(1)?.parse().ok()
@@ -40,7 +44,10 @@ fn default_seed_and_alternate_table_have_explicit_readiness() {
         let dir = std::env::temp_dir().join(format!(
             "textguard-bootstrap-table-{}-{}",
             std::process::id(),
-            SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos()
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
         ));
         std::fs::create_dir(&dir).unwrap();
         for (name, value) in [
@@ -51,8 +58,13 @@ fn default_seed_and_alternate_table_have_explicit_readiness() {
             std::fs::write(&path, value).unwrap();
             std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o600)).unwrap();
         }
-        let listeners: Vec<_> = (0..3).map(|_| TcpListener::bind("127.0.0.1:0").unwrap()).collect();
-        let addresses: Vec<_> = listeners.iter().map(|listener| listener.local_addr().unwrap()).collect();
+        let listeners: Vec<_> = (0..3)
+            .map(|_| TcpListener::bind("127.0.0.1:0").unwrap())
+            .collect();
+        let addresses: Vec<_> = listeners
+            .iter()
+            .map(|listener| listener.local_addr().unwrap())
+            .collect();
         drop(listeners);
         let child = Command::new(env!("CARGO_BIN_EXE_imboy-textguard"))
             .env("TEXTGUARD_DATA_DIR", dir.join("rules"))
@@ -64,12 +76,21 @@ fn default_seed_and_alternate_table_have_explicit_readiness() {
             .env("TEXTGUARD_MANAGE_ADDR", addresses[2].to_string())
             .stdout(Stdio::null())
             .stderr(Stdio::null())
-            .spawn().unwrap();
-        let mut process = IsolatedProcess { child, directory: dir };
+            .spawn()
+            .unwrap();
+        let mut process = IsolatedProcess {
+            child,
+            directory: dir,
+        };
         let deadline = Instant::now() + Duration::from_secs(5);
         let actual = loop {
-            assert!(process.child.try_wait().unwrap().is_none(), "startup exited for supported table {table}");
-            if let Some(code) = ready_status(addresses[0]) { break code; }
+            assert!(
+                process.child.try_wait().unwrap().is_none(),
+                "startup exited for supported table {table}"
+            );
+            if let Some(code) = ready_status(addresses[0]) {
+                break code;
+            }
             assert!(Instant::now() < deadline, "startup did not listen");
             std::thread::sleep(Duration::from_millis(10));
         };

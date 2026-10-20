@@ -1,0 +1,2466 @@
+{
+  "schema_version": 1,
+  "normalization_id": "imboy-base-v1",
+  "t2s_table_id": "opencc-1.1.9-single-v1",
+  "limit_profile_id": "mvp-default-v1",
+  "semantics_by_scene": {
+    "channel_message": "compat-v1",
+    "moment_post": "compat-v1",
+    "profile_field": "compat-v1"
+  },
+  "allow_empty": false,
+  "literals": [
+    {
+      "id": "3294152857466107695",
+      "word": "qq专卖假军官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "7620113518419055033",
+      "word": "qq专卖高仿军官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "4931454952789089724",
+      "word": "qq代办假军官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "4557084934343896755",
+      "word": "qq代办高仿军官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "261992054611243917",
+      "word": "qq供应高仿警官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "4982106212851413195",
+      "word": "qq供应高仿警服",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "5342452728701323583",
+      "word": "qq假军官证出售",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "1577730240194331567",
+      "word": "qq假军官证销售",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "2537623880859076504",
+      "word": "qq出售仿真警服",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "3209798663698140967",
+      "word": "qq出售高仿军官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "2719007154329472904",
+      "word": "qq出售高仿警官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "3263153211602692522",
+      "word": "qq出售高仿警服",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "2131002092401947245",
+      "word": "qq制作假军官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "8830686848046530372",
+      "word": "qq制作高仿军官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "9062374359860952514",
+      "word": "qq批发仿真警服",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "7685379273190919680",
+      "word": "qq批发高仿警服",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "8394634897863458603",
+      "word": "qq提供仿真警服",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "5035259141279324191",
+      "word": "qq提供高仿军官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "5715712752349022296",
+      "word": "qq提供高仿警服",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "7015017567295316396",
+      "word": "qq直销仿真警服",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "1069674153594551584",
+      "word": "qq订购高仿警服",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "638060362284803121",
+      "word": "qq销售高仿军官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "8059109016454086938",
+      "word": "qq销售高仿警服",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "756180941633272632",
+      "word": "qq高仿军官证代办",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "784649140253111822",
+      "word": "qq高仿军官证制作",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "6287140150267897547",
+      "word": "qq高仿军官证办理",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "5782658652456215797",
+      "word": "qq高仿警官证出售",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "3499222182456062039",
+      "word": "qq高仿警官证销售",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "6042176769045868352",
+      "word": "专卖假军官证qq",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "8134836202715278084",
+      "word": "买卖仿真警官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "4700610639536490567",
+      "word": "代制1代假身份证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "4328166392900960256",
+      "word": "代制假1代身份证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "980519056938817383",
+      "word": "代制假2代身份证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "3889696517093908799",
+      "word": "代办假军官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "3757461553528598097",
+      "word": "代办假护照",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "1271238298850690707",
+      "word": "代办假警官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "1354481380521286288",
+      "word": "代办高仿军官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "4042088941427863081",
+      "word": "代办高仿军官证qq",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "5876457283545799890",
+      "word": "代办高仿护照",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "8439799519466162428",
+      "word": "代办高仿警官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "1292387785407125928",
+      "word": "代办高仿警官证qq",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "7581342055290645624",
+      "word": "仿真警服专卖",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "3509632408977942100",
+      "word": "仿真警服批发qq",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "5010332551947764022",
+      "word": "仿真警服直销",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "1926812173295006733",
+      "word": "仿造假身份证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "5760835844949201823",
+      "word": "伪造身份证软件",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "3862327718930301171",
+      "word": "供应假军官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "1463314134621728404",
+      "word": "供应假户口本",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "4389803401680647693",
+      "word": "供应假结婚证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "8466697142599171909",
+      "word": "供应假身份证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "2756661187398121551",
+      "word": "供应高仿警官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "3217063109062436789",
+      "word": "供应高仿警帽",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "3084841834212361268",
+      "word": "供应高仿警服",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "2566017697598529413",
+      "word": "供应高仿警服qq",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "7359732908831938183",
+      "word": "假军官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "2243124359134805823",
+      "word": "假户口本代办",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "2431239131757097463",
+      "word": "假户口本办理",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "8562729435106614399",
+      "word": "假护照代办",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "101650115543464657",
+      "word": "假护照办理",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "4544387186759149685",
+      "word": "假警官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "6275418563735923648",
+      "word": "假警官证qq",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "463731435194963928",
+      "word": "假警官证销售",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "1787303459174942018",
+      "word": "假身份证出售",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "3665962221917967807",
+      "word": "假身份证办理",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "4351015539808937819",
+      "word": "假身份证销售",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "6512836316056121247",
+      "word": "做假军官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "3632041382496340397",
+      "word": "做假户口本",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "6252718617573964982",
+      "word": "做假结婚证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "6440685726234793337",
+      "word": "冒充公检法",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "6743712821590568119",
+      "word": "出售1代假身份证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "1706259126948706998",
+      "word": "出售2代假身份证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "3751098747007588710",
+      "word": "出售仿真警服",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "3592595064457956327",
+      "word": "出售仿真警服qq",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "7541665451325205399",
+      "word": "出售假户口本",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "4208673443648378203",
+      "word": "出售假身份证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "524191135619050471",
+      "word": "出售高仿军官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "7436833973153335672",
+      "word": "出售高仿军官证qq",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "1985463208659904530",
+      "word": "出售高仿护照",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "2023823644958230457",
+      "word": "出售高仿警官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "2554587549951883493",
+      "word": "出售高仿警官证qq",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "8533904386847411982",
+      "word": "出售高仿警服",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "2774734101190726526",
+      "word": "出售高仿警服qq",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "7400680753658737466",
+      "word": "制作假军官证qq",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "8228419148724757957",
+      "word": "制作假户口本",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "2374491762675637148",
+      "word": "制作假护照",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "4866747785151667612",
+      "word": "制作假警官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "3998875911868632723",
+      "word": "制作高仿军官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "3299512036826815876",
+      "word": "制作高仿军官证qq",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "3328915413583798429",
+      "word": "制作高仿护照",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "4985601288578209837",
+      "word": "制售高仿真身份证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "3553645125463868279",
+      "word": "制造假身份证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "1085625353864097459",
+      "word": "办假军警官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "7130417030459941086",
+      "word": "办假户口本",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "7111456797712956435",
+      "word": "办假房产证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "1656570132113834709",
+      "word": "办假离婚证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "8502099551278784851",
+      "word": "办假警官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "4791710577299679747",
+      "word": "办假身份证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "6499943223263652151",
+      "word": "办理1代假身份证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "8628722474137802116",
+      "word": "办理2代假身份证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "7694807723275608461",
+      "word": "办理仿真身份证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "124165368244335092",
+      "word": "办理假军官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "6512407639036828865",
+      "word": "办理假军官证qq",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "6480744852685564412",
+      "word": "办理假户口本",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "8929200574925415552",
+      "word": "办理假房产证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "1002023631026580426",
+      "word": "办理假残疾证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "1917721105673608739",
+      "word": "办理假离婚证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "4834745205994285201",
+      "word": "办理假结婚证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "7274345663269351353",
+      "word": "办理假身份证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "8494999079154006396",
+      "word": "办理高仿军官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "8502866497572072309",
+      "word": "办理高仿军官证qq",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "4979991215698893406",
+      "word": "办理高仿护照",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "5497489539459777219",
+      "word": "办理高仿真证件",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "8678360290207430748",
+      "word": "办理高仿警官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "6459809779364426074",
+      "word": "办理高仿警官证qq",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "4632875920796158595",
+      "word": "办理高仿证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "1056238418910583322",
+      "word": "办高仿真身份证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "7567512432414435082",
+      "word": "办高仿证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "6643509213290309005",
+      "word": "卖1代假身份证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "6489005712465654103",
+      "word": "卖2代假身份证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "4401910885210717808",
+      "word": "卖假军官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "532842280290337968",
+      "word": "卖警官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "812810279546702278",
+      "word": "售假军官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "4745516589181321068",
+      "word": "售警官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "391127629335807286",
+      "word": "当面交易假军官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "1245122431251096874",
+      "word": "当面交易假户口本",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "4728219825840964769",
+      "word": "当面交易假结婚证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "4324591032379265484",
+      "word": "当面交易假身份证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "4190872274366689064",
+      "word": "当面交易警官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "3478580420664821732",
+      "word": "批发1代假身份证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "1502735053803149797",
+      "word": "批发2代假身份证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "5533626075225714694",
+      "word": "批发仿真警服",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "2176254881008886430",
+      "word": "批发假1代身份证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "6543867679689888420",
+      "word": "批发假2代身份证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "3839900114237997148",
+      "word": "批发高仿警服",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "4000163742704615633",
+      "word": "批发高仿证件",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "3441554221899343898",
+      "word": "批量高仿警服出售",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "9157820110735156968",
+      "word": "拉票贿选",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "3687133443309356616",
+      "word": "提供仿真警服",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "2840015148418570758",
+      "word": "提供假军官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "3105711096496330181",
+      "word": "提供假户口本",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "3744181060316342822",
+      "word": "提供假结婚证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "8637534784806485544",
+      "word": "提供假身份证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "7532504057419507639",
+      "word": "提供高仿警服",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "5503640679191447260",
+      "word": "提供高仿警服qq",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "3711198552860469299",
+      "word": "提供高仿证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "2061309146501882497",
+      "word": "政府说的话就像尼斯湖水怪一样无所谓真假",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "8863543029325797597",
+      "word": "特供高仿真身份证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "4949976499398208230",
+      "word": "直销仿真警服",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "7156674481677633649",
+      "word": "直销仿真警服qq",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "6563298871176159246",
+      "word": "直销警官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "8746037186741051347",
+      "word": "直销高仿警服",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "3632981520532742799",
+      "word": "精仿身份证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "1030227810491130030",
+      "word": "警官证专卖",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "2073170924985537078",
+      "word": "警官证买卖",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "6338234018826954079",
+      "word": "警官证供应",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "6465167615355415786",
+      "word": "警官证出售",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "4560666423933789377",
+      "word": "警官证销售",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "1319333443736141068",
+      "word": "订购高仿警服",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "5471702024205522065",
+      "word": "订购高仿警服qq",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "5508722183167972505",
+      "word": "诚信假身份证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "2311916427821651984",
+      "word": "购买警官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "3191279182651698769",
+      "word": "销售高仿军官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "7263612516489698461",
+      "word": "销售高仿警官证",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "7488916614397203125",
+      "word": "销售高仿警官证qq",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "5131496784360330365",
+      "word": "销售高仿警服",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "8055009799558859750",
+      "word": "销售高仿警服qq",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "6216452141967891833",
+      "word": "高仿军官证办理qq",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "4259703394973855541",
+      "word": "高仿警服供应",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "6126218014978358396",
+      "word": "高仿警服供应qq",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "8829671923654947652",
+      "word": "高仿警服出售",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "5781810342093237781",
+      "word": "高仿警服出售qq",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "9014723710449081585",
+      "word": "高仿警服提供qq",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "4515654311527090906",
+      "word": "高仿警服订购qq",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "8491502105042015299",
+      "word": "高仿警服销售",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    },
+    {
+      "id": "4348508481986514215",
+      "word": "高仿警服销售qq",
+      "category": "political_abuse",
+      "severity": "medium",
+      "scenes": [
+        "profile_field"
+      ],
+      "aliases": [],
+      "gap": {
+        "enabled": false,
+        "action": "review"
+      }
+    }
+  ],
+  "regex_rules": [],
+  "exceptions": []
+}

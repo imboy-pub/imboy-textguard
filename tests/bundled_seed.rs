@@ -1,5 +1,5 @@
 use imboy_textguard::engine::Snapshot;
-use imboy_textguard::model::{RuleSet, Scene, CheckRequest, TextField, Action};
+use imboy_textguard::model::{Action, CheckRequest, RuleSet, Scene, TextField};
 use imboy_textguard::normalize::t2s;
 
 #[test]
@@ -22,7 +22,10 @@ fn bundled_review_seed_is_valid_and_categorized() {
     let request = CheckRequest {
         request_id: "seed-smoke".into(),
         scene: Scene::ProfileField,
-        fields: vec![TextField { field_id: "nickname".into(), text: "招嫖服务".into() }],
+        fields: vec![TextField {
+            field_id: "nickname".into(),
+            text: "招嫖服务".into(),
+        }],
     };
     let result = snapshot.check(&request, &|| false).expect("check succeeds");
     assert_eq!(result.decision, Action::Review);
