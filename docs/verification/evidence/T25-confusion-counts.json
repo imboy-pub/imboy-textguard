@@ -1,0 +1,50 @@
+{
+ "dataset_seed": 20261018,
+ "sample_counts": {
+  "normal": 120,
+  "trigger": 57,
+  "trigger_breakdown": {
+   "canonical": 20,
+   "alias": 20,
+   "gap": 7,
+   "t2s": 10
+  },
+  "context_negative": 20,
+  "boundary_negative": 3
+ },
+ "confusion": {
+  "normal": {
+   "allow": 120,
+   "hit": 0
+  },
+  "trigger": {
+   "detected": 57,
+   "missed": 0,
+   "action_match": 57,
+   "action_mismatch": 0
+  },
+  "context_negative": {
+   "review": 10,
+   "block": 10,
+   "allow": 0
+  },
+  "boundary_negative": {
+   "allow": 3,
+   "hit": 0
+  }
+ },
+ "false_positive_case_ids": [],
+ "context_block_violation_case_ids": [
+  "context-negative-01",
+  "context-negative-04",
+  "context-negative-05",
+  "context-negative-08",
+  "context-negative-09",
+  "context-negative-12",
+  "context-negative-13",
+  "context-negative-16",
+  "context-negative-17",
+  "context-negative-20"
+ ],
+ "action_mismatch_case_ids": []
+}

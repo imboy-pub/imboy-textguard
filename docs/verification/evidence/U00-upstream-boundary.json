@@ -1,0 +1,47 @@
+{
+  "upstream_base_sha": "6c0abf5681bfc30bb9d8f7f52b68a350b436fffa",
+  "default_branch": "master",
+  "policy_files_found": [],
+  "policy_interpretation": "No explicit target-specific submission/AI rule found in tracked files; does not authorize autonomous publication",
+  "package_version": "1.1.5",
+  "msrv": "1.60.0",
+  "autotests": false,
+  "test_registration": "src/tests.rs module and in-source #[test], no automatic integration tests",
+  "features": {
+    "default": [
+      "std",
+      "perf-literal"
+    ],
+    "no_std_alloc": "supported; future candidate must verify"
+  },
+  "bytes_api": true,
+  "public_api_constraint": "TextGuard consumes registry public API only",
+  "licenses": [
+    "Unlicense",
+    "MIT"
+  ],
+  "ci_builds": [
+    "pinned MSRV",
+    "stable",
+    "i686",
+    "aarch64",
+    "powerpc64",
+    "s390x",
+    "beta",
+    "nightly",
+    "macos",
+    "windows-msvc",
+    "windows-gnu"
+  ],
+  "source_hashes": {
+    "Cargo.toml": "6c8341535cb4f736c1ac6b18292df2c572ccb18740bb9325e42b22c67f9e27da",
+    ".github/workflows/ci.yml": "2d9409bedd406551a2e7e62158f3826c54c38a15d35e2a1a660e47499ea1999e",
+    "LICENSE-MIT": "0f96a83840e146e43c0ec96a22ec1f392e0680e6c1226e6f3ba87e0740af850f",
+    "UNLICENSE": "7e12e5df4bae12cb21581ba157ced20e1986a0508dd10d0e8a4ab9a4cf94e85c",
+    "COPYING": "01c266bced4a434da0051174d6bee16a4c82cf634e2679b6155d40d75012390f"
+  },
+  "candidate_count": 0,
+  "candidate_status": "NO_SIGNAL_CURRENTLY",
+  "runtime_upstream_tests": "NOT_RUN_NOT_CONSUMED",
+  "public_authorization": "NOT_AUTHORIZED"
+}

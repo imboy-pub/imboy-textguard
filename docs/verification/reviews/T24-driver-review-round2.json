@@ -1,0 +1,23 @@
+{
+ "reviewer": "agent-independent-zcode-rereview",
+ "scope": "2c6ac1d..HEAD",
+ "verdict": "GO",
+ "closed": [
+  "P0-1",
+  "P1-1",
+  "P1-2",
+  "P2-1",
+  "P2-2"
+ ],
+ "new_findings": [],
+ "p0_count": 0,
+ "p1_count": 0,
+ "confirmed": "src/ and benches/ unchanged in 2c6ac1d..HEAD; all follow-up driver fixes verified non-weakening (last-literal mutation keeps 50k cap + distinct digests + oracle validity; oom_at_boot branch cannot bypass the assertion)",
+ "non_blocking_notes": [
+  "stale comment 'appends one unique neutral literal' vs mutation implementation",
+  "assertion message still says 256 MiB (actual 64m)",
+  "residual DIAG eprintln",
+  "RSS assertion silently skipped when <=120 samples (degraded-sparse case fails with TypeError, not false-pass)"
+ ],
+ "recorded_at": "2026-10-18T09:56:30+0800"
+}

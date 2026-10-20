@@ -1,0 +1,55 @@
+{
+ "conclusion": "malloc_trim fix eliminates the publication-under-load RSS ratchet",
+ "A": {
+  "image": "sha256:4e69839e343280d46c51dba337ca1ae799fd7538b9c7b043a82c354f4f45e628 (unfixed)",
+  "scenario": "500QPS mixed 64conn 600s + 20 publications every 28s",
+  "rss_mb": [
+   [
+    "base",
+    244
+   ],
+   [
+    "pub80",
+    445
+   ],
+   [
+    "pub99",
+    932
+   ],
+   [
+    "post-load",
+    932
+   ]
+  ],
+  "retention": "+34MB/publication, frozen after publications stop"
+ },
+ "B": {
+  "image": "sha256:e328a097cad142b4ea81a5bed72b2d93bc1455ba7e07ac9da5eeb3f132349688 (fixed, malloc_trim)",
+  "scenario": "identical",
+  "rss_mb": [
+   [
+    "base",
+    114
+   ],
+   [
+    "plateau-range",
+    "209-275"
+   ],
+   [
+    "pub99",
+    222
+   ],
+   [
+    "post-load",
+    222
+   ]
+  ],
+  "retention": "zero net growth"
+ },
+ "isolation_probes": {
+  "unfixed_publish_only": "plateau ~510MB after 100 pubs (no leak in publish path itself)",
+  "macos_debug_publish_only": "plateau ~350MB"
+ },
+ "root_cause": "glibc arena retention of compile transients fragmented by concurrent connection traffic",
+ "recorded_at": "2026-10-18T11:31:33+0800"
+}

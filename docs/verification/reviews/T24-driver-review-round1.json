@@ -1,0 +1,46 @@
+{
+ "reviewer": "agent-independent-zcode",
+ "scope": "1a07e72..2c6ac1d",
+ "verdict": "NO_GO",
+ "p0_count": 1,
+ "p1_count": 2,
+ "p2_count": 2,
+ "findings": [
+  {
+   "id": "P0-1",
+   "file": "tests/performance/run_capacity.py",
+   "summary": "capacity assertions referenced never-computed window_completed (silent str.replace no-op); committed driver could not pass"
+  },
+  {
+   "id": "P1-1",
+   "file": "tests/final_admission_privacy.rs",
+   "summary": "ac088 gauge observation vacuous (defaults 0, no non-vacuity requirement)"
+  },
+  {
+   "id": "P1-2",
+   "file": "tests/performance/run_capacity.py",
+   "summary": "OOM half of AC-096 not asserted (idle twin never OOMed, code asserted nothing)"
+  },
+  {
+   "id": "P2-1",
+   "file": "tests/performance/run_capacity.py",
+   "summary": "soak RSS window used order statistics not the frozen first/last-ten-minute time windows"
+  },
+  {
+   "id": "P2-2",
+   "file": "tests/final_deploy_tls.rs",
+   "summary": "host nginx lacked a Drop guard on panic paths"
+  }
+ ],
+ "positive_confirmations": [
+  "production src changes are exactly the declared fault-injection seam; feature-off builds compile hooks away; SIGKILL only reachable with feature on",
+  "T22/T23 assertions genuine (no vacuous truths); ac087 dual-transport saturation proven; ac089 canary covers full metrics text and labels",
+  "soak neutral-literal variants are a repair not a weakening; manifest/commands registrations consistent"
+ ],
+ "fixes": {
+  "commit": "7284f61",
+  "offline_verification": "summary() dual-rate computation replayed against formal03 raw data: window_qps soak=500.0 exact, capacity=499.9983 window / 499.9996 drain",
+  "post_fix_tests": "final_admission_privacy 3/3 (ac088 peaks running=2 queued=22 cancelled=1 bounded+observed), final_deploy_tls 3/3, clippy 0 warnings"
+ },
+ "recorded_at": "2026-10-18T05:03:51+0800"
+}

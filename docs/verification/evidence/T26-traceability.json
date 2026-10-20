@@ -1,0 +1,1106 @@
+{
+ "generated_at": "2026-10-18T13:02:23+0800",
+ "state_schema_version": 3,
+ "plan_digest": "607fd1f8479579e570e411c1c4c8e1f5ebbe652730a408604b9cfcf8373ed201",
+ "acceptance": {
+  "AC-001": {
+   "status": "PASS",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  },
+  "AC-002": {
+   "status": "PASS",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  },
+  "AC-003": {
+   "status": "PASS",
+   "task": null,
+   "phase": "source_baseline",
+   "evidence": []
+  },
+  "AC-004": {
+   "status": "PASS",
+   "task": null,
+   "phase": "source_baseline",
+   "evidence": []
+  },
+  "AC-005": {
+   "status": "PASS",
+   "task": null,
+   "phase": "source_baseline",
+   "evidence": []
+  },
+  "AC-006": {
+   "status": "PASS",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  },
+  "AC-007": {
+   "status": "PASS",
+   "task": null,
+   "phase": "contract",
+   "evidence": []
+  },
+  "AC-008": {
+   "status": "PASS",
+   "task": null,
+   "phase": "contract",
+   "evidence": []
+  },
+  "AC-009": {
+   "status": "PASS",
+   "task": "T04",
+   "phase": "T04",
+   "evidence": []
+  },
+  "AC-010": {
+   "status": "PASS",
+   "task": "T04",
+   "phase": "T04",
+   "evidence": []
+  },
+  "AC-011": {
+   "status": "PASS",
+   "task": "T05",
+   "phase": "T05-component",
+   "evidence": []
+  },
+  "AC-012": {
+   "status": "PASS",
+   "task": "T05",
+   "phase": "T05-component",
+   "evidence": []
+  },
+  "AC-013": {
+   "status": "PASS",
+   "task": "T05",
+   "phase": "T05_backfill",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/batch-final-148229c/T05/result.json"
+   ]
+  },
+  "AC-014": {
+   "status": "PASS",
+   "task": "T06",
+   "phase": "T06-component",
+   "evidence": []
+  },
+  "AC-015": {
+   "status": "PASS",
+   "task": "T06",
+   "phase": "T06-component",
+   "evidence": []
+  },
+  "AC-016": {
+   "status": "PASS",
+   "task": "T06",
+   "phase": "T06-component",
+   "evidence": []
+  },
+  "AC-017": {
+   "status": "PASS",
+   "task": "T06",
+   "phase": "T06-component",
+   "evidence": []
+  },
+  "AC-018": {
+   "status": "PASS",
+   "task": "T06",
+   "phase": "T06-component",
+   "evidence": []
+  },
+  "AC-019": {
+   "status": "PASS",
+   "task": "T06",
+   "phase": "T06-component",
+   "evidence": []
+  },
+  "AC-020": {
+   "status": "PASS",
+   "task": "T07",
+   "phase": "T07-component",
+   "evidence": []
+  },
+  "AC-021": {
+   "status": "PASS",
+   "task": "T07",
+   "phase": "T07-component",
+   "evidence": []
+  },
+  "AC-022": {
+   "status": "PASS",
+   "task": "T07",
+   "phase": "T07-component",
+   "evidence": []
+  },
+  "AC-023": {
+   "status": "PASS",
+   "task": "T07",
+   "phase": "T07-component",
+   "evidence": []
+  },
+  "AC-024": {
+   "status": "PASS",
+   "task": "T08",
+   "phase": "T08_backfill",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/batch-final-148229c/T08/result.json"
+   ]
+  },
+  "AC-025": {
+   "status": "PASS",
+   "task": "T08",
+   "phase": "T08_backfill",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/batch-final-148229c/T08/result.json"
+   ]
+  },
+  "AC-026": {
+   "status": "PASS",
+   "task": "T08",
+   "phase": "T08_backfill",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/batch-final-148229c/T08/result.json"
+   ]
+  },
+  "AC-027": {
+   "status": "PASS",
+   "task": "T08",
+   "phase": "T08_backfill",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/batch-final-148229c/T08/result.json"
+   ]
+  },
+  "AC-028": {
+   "status": "PASS",
+   "task": "T08",
+   "phase": "T08_backfill",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/batch-final-148229c/T08/result.json"
+   ]
+  },
+  "AC-029": {
+   "status": "PASS",
+   "task": "T08",
+   "phase": "T08_backfill",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/batch-final-148229c/T08/result.json"
+   ]
+  },
+  "AC-030": {
+   "status": "PASS",
+   "task": "T08",
+   "phase": "T08_backfill",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/batch-final-148229c/T08/result.json"
+   ]
+  },
+  "AC-031": {
+   "status": "PASS",
+   "task": "T08",
+   "phase": "T08_backfill",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/batch-final-148229c/T08/result.json"
+   ]
+  },
+  "AC-032": {
+   "status": "PASS",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  },
+  "AC-033": {
+   "status": "PASS",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  },
+  "AC-034": {
+   "status": "PASS",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  },
+  "AC-035": {
+   "status": "PASS",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  },
+  "AC-036": {
+   "status": "PASS",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  },
+  "AC-037": {
+   "status": "PASS",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  },
+  "AC-038": {
+   "status": "PASS",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  },
+  "AC-039": {
+   "status": "PASS",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  },
+  "AC-040": {
+   "status": "PASS",
+   "task": "T10",
+   "phase": "T10_backfill",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/batch-final-148229c/T10/result.json"
+   ]
+  },
+  "AC-041": {
+   "status": "PASS",
+   "task": "T10",
+   "phase": "T10_backfill",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/batch-final-148229c/T10/result.json"
+   ]
+  },
+  "AC-042": {
+   "status": "PASS",
+   "task": "T10",
+   "phase": "T10_backfill",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/batch-final-148229c/T10/result.json"
+   ]
+  },
+  "AC-043": {
+   "status": "PASS",
+   "task": "T10",
+   "phase": "T10_backfill",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/batch-final-148229c/T10/result.json"
+   ]
+  },
+  "AC-044": {
+   "status": "PASS",
+   "task": "T10",
+   "phase": "T10_backfill",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/batch-final-148229c/T10/result.json"
+   ]
+  },
+  "AC-045": {
+   "status": "PASS",
+   "task": "T10",
+   "phase": "T10_backfill",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/batch-final-148229c/T10/result.json"
+   ]
+  },
+  "AC-046": {
+   "status": "PASS",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  },
+  "AC-047": {
+   "status": "PASS",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  },
+  "AC-048": {
+   "status": "PASS",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  },
+  "AC-049": {
+   "status": "PASS",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  },
+  "AC-050": {
+   "status": "PASS",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  },
+  "AC-051": {
+   "status": "PASS",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  },
+  "AC-052": {
+   "status": "PASS",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  },
+  "AC-053": {
+   "status": "PASS",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  },
+  "AC-054": {
+   "status": "PASS",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  },
+  "AC-055": {
+   "status": "PASS",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  },
+  "AC-056": {
+   "status": "PASS",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  },
+  "AC-057": {
+   "status": "PASS",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  },
+  "AC-058": {
+   "status": "PASS",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  },
+  "AC-059": {
+   "status": "PASS",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  },
+  "AC-060": {
+   "status": "PASS",
+   "task": "T19",
+   "phase": "T19_W5_final_integrated",
+   "evidence": []
+  },
+  "AC-061": {
+   "status": "PASS",
+   "task": "T19",
+   "phase": "T19_W5_final_integrated",
+   "evidence": []
+  },
+  "AC-062": {
+   "status": "PASS",
+   "task": "T14",
+   "phase": "T22_integration_revalidated",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T22-regress-t14/result.json"
+   ]
+  },
+  "AC-063": {
+   "status": "PASS",
+   "task": "T14",
+   "phase": "T22_integration_revalidated",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T22-regress-t14/result.json"
+   ]
+  },
+  "AC-064": {
+   "status": "PASS",
+   "task": "T14",
+   "phase": "T22_integration_revalidated",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T22-regress-t14/result.json"
+   ]
+  },
+  "AC-065": {
+   "status": "PASS",
+   "task": "T14",
+   "phase": "T22_integration_revalidated",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T22-regress-t14/result.json"
+   ]
+  },
+  "AC-066": {
+   "status": "PASS",
+   "task": "T14",
+   "phase": "T22_integration_revalidated",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T22-regress-t14/result.json"
+   ]
+  },
+  "AC-067": {
+   "status": "PASS",
+   "task": "T22",
+   "phase": "T22_final",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T22-fault03/result.json"
+   ]
+  },
+  "AC-068": {
+   "status": "PASS",
+   "task": "T22",
+   "phase": "T22_final",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T22-fault03/result.json"
+   ]
+  },
+  "AC-069": {
+   "status": "PASS",
+   "task": "T22",
+   "phase": "T22_final",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T22-fault03/result.json"
+   ]
+  },
+  "AC-070": {
+   "status": "PASS",
+   "task": "T22",
+   "phase": "T22_final",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T22-fault03/result.json"
+   ]
+  },
+  "AC-071": {
+   "status": "PASS",
+   "task": "T22",
+   "phase": "T22_final",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T22-fault03/result.json"
+   ]
+  },
+  "AC-072": {
+   "status": "PASS",
+   "task": "T16",
+   "phase": "T23_revalidated",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T23-erlang01/verification-final.json"
+   ]
+  },
+  "AC-073": {
+   "status": "PASS",
+   "task": "T16",
+   "phase": "T23_revalidated",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T23-erlang01/verification-final.json"
+   ]
+  },
+  "AC-074": {
+   "status": "PASS",
+   "task": "T16",
+   "phase": "T23_revalidated",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T23-erlang01/verification-final.json"
+   ]
+  },
+  "AC-075": {
+   "status": "PASS",
+   "task": "T16",
+   "phase": "T23_revalidated",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T23-erlang01/verification-final.json"
+   ]
+  },
+  "AC-076": {
+   "status": "PASS",
+   "task": "T19",
+   "phase": "T19_W5_final_integrated",
+   "evidence": []
+  },
+  "AC-077": {
+   "status": "PASS",
+   "task": "T19",
+   "phase": "T19_W5_final_integrated",
+   "evidence": []
+  },
+  "AC-078": {
+   "status": "PASS",
+   "task": "T23",
+   "phase": "T23_final",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T23-rust02/result.json",
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T23-erlang01/verification-final.json"
+   ]
+  },
+  "AC-079": {
+   "status": "PASS",
+   "task": "T23",
+   "phase": "T23_final",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T23-rust02/result.json",
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T23-erlang01/verification-final.json"
+   ]
+  },
+  "AC-080": {
+   "status": "PASS",
+   "task": "T20",
+   "phase": "T20_W5_final_integrated",
+   "evidence": []
+  },
+  "AC-081": {
+   "status": "PASS",
+   "task": "T20",
+   "phase": "T20_W5_final_integrated",
+   "evidence": []
+  },
+  "AC-082": {
+   "status": "PASS",
+   "task": "T23",
+   "phase": "T23_final",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T23-rust02/result.json",
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T23-erlang01/verification-final.json"
+   ]
+  },
+  "AC-083": {
+   "status": "PASS",
+   "task": "T20",
+   "phase": "T20_W5_final_integrated",
+   "evidence": []
+  },
+  "AC-084": {
+   "status": "PASS",
+   "task": "T21",
+   "phase": "T21_W5_final_integrated",
+   "evidence": []
+  },
+  "AC-085": {
+   "status": "PASS",
+   "task": "T21",
+   "phase": "T21_W5_final_integrated",
+   "evidence": []
+  },
+  "AC-086": {
+   "status": "PASS",
+   "task": "T21",
+   "phase": "T21_W5_final_integrated",
+   "evidence": []
+  },
+  "AC-087": {
+   "status": "PASS",
+   "task": "T23",
+   "phase": "T23_final",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T23-rust02/result.json"
+   ]
+  },
+  "AC-088": {
+   "status": "PASS",
+   "task": "T23",
+   "phase": "T23_final",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T23-rust02/result.json"
+   ]
+  },
+  "AC-089": {
+   "status": "PASS",
+   "task": "T23",
+   "phase": "T23_final",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T23-rust02/result.json"
+   ]
+  },
+  "AC-090": {
+   "status": "PASS",
+   "task": "T23",
+   "phase": "T23_final",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T23-rust02/result.json"
+   ]
+  },
+  "AC-091": {
+   "status": "PASS",
+   "task": "T24",
+   "phase": "T24_final",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T24-formal05"
+   ]
+  },
+  "AC-092": {
+   "status": "PASS_WITH_ENV_EXCEPTION",
+   "task": "T24",
+   "phase": "T24_final",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T24-formal05"
+   ]
+  },
+  "AC-093": {
+   "status": "PARTIAL",
+   "task": "T24",
+   "phase": "T24_final",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T24-formal05"
+   ]
+  },
+  "AC-094": {
+   "status": "PARTIAL",
+   "task": "T24",
+   "phase": "T24_final",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T24-formal05"
+   ]
+  },
+  "AC-095": {
+   "status": "PARTIAL_DEFECT_FIXED",
+   "task": "T24",
+   "phase": "T24_final",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T24-soak09-fixed",
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T24-rss-fix-ab/ab-result.json"
+   ]
+  },
+  "AC-096": {
+   "status": "PASS",
+   "task": "T24",
+   "phase": "T24_final",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T24-ac096-run05"
+   ]
+  },
+  "AC-097": {
+   "status": "PASS_WITH_DECLARED_LIMITS",
+   "task": "T25",
+   "phase": "T25_restricted",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T25-corpus-eval01/confusion-counts.json"
+   ]
+  },
+  "AC-098": {
+   "status": "PASS_WITH_DECLARED_LIMITS",
+   "task": "T25",
+   "phase": "T25_restricted",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T25-corpus-eval01/rule-activation-manifest.json"
+   ]
+  },
+  "AC-099": {
+   "status": "PASS",
+   "task": "T28",
+   "phase": "T28_final",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T28-run07/result.json"
+   ]
+  },
+  "AC-100": {
+   "status": "PASS",
+   "task": "T28",
+   "phase": "T28_final",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T28-run07/result.json"
+   ]
+  },
+  "AC-101": {
+   "status": "PASS",
+   "task": "T28",
+   "phase": "T28_final",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T28-run07/result.json"
+   ]
+  },
+  "AC-102": {
+   "status": "NOT_RUN",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  },
+  "AC-103": {
+   "status": "NOT_RUN",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  },
+  "AC-104": {
+   "status": "NOT_RUN",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  },
+  "AC-105": {
+   "status": "NOT_RUN",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  },
+  "AC-106": {
+   "status": "NOT_RUN",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  },
+  "AC-107": {
+   "status": "NOT_AUTHORIZED",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  },
+  "AC-108": {
+   "status": "NOT_AUTHORIZED",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  },
+  "AC-109": {
+   "status": "PASS",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  },
+  "AC-110": {
+   "status": "PASS",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  },
+  "AC-111": {
+   "status": "PASS",
+   "task": "T01/T20/T23",
+   "phase": "T23_final",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T23-erlang01/verification-final.json",
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/W5-post-freeze-consumer-drift11.json"
+   ]
+  },
+  "AC-112": {
+   "status": "PASS",
+   "task": null,
+   "phase": "contract",
+   "evidence": []
+  },
+  "AC-113": {
+   "status": "PASS",
+   "task": "T04",
+   "phase": "T04",
+   "evidence": []
+  },
+  "AC-114": {
+   "status": "PASS",
+   "task": "T04",
+   "phase": "T04",
+   "evidence": []
+  },
+  "AC-115": {
+   "status": "PASS",
+   "task": "T19",
+   "phase": "T19_W5_final_integrated",
+   "evidence": []
+  },
+  "AC-116": {
+   "status": "PASS",
+   "task": "T28",
+   "phase": "T28_final",
+   "evidence": [
+    "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T28-run07/result.json"
+   ]
+  },
+  "AC-117": {
+   "status": "NOT_RUN",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  },
+  "AC-118": {
+   "status": "NOT_RUN",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  },
+  "AC-119": {
+   "status": "NOT_RUN",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  },
+  "AC-120": {
+   "status": "NOT_RUN",
+   "task": null,
+   "phase": null,
+   "evidence": []
+  }
+ },
+ "tasks": {
+  "T00": {
+   "status": "PASSED",
+   "title": "确认环境、工作区与只读基线"
+  },
+  "T01": {
+   "status": "PASSED",
+   "title": "核查IMBoy调用链、词库和业务语义"
+  },
+  "T02": {
+   "status": "PASSED",
+   "title": "整理测试语料、数据来源与授权"
+  },
+  "T03": {
+   "status": "PASSED",
+   "title": "冻结合同、依赖、限额与文件所有权"
+  },
+  "T04": {
+   "status": "INTEGRATED",
+   "title": "创建可构建骨架与真实验收入口",
+   "commit": "5e162fd",
+   "commit_resolvable": null
+  },
+  "T05": {
+   "status": "INTEGRATED",
+   "title": "建立独立oracle与黄金用例",
+   "commit": "74b4eeb",
+   "commit_resolvable": null
+  },
+  "T06": {
+   "status": "INTEGRATED",
+   "title": "实现基础归一化与原文映射",
+   "commit": "92c070a",
+   "commit_resolvable": null
+  },
+  "T07": {
+   "status": "INTEGRATED",
+   "title": "生成受限繁简字形表",
+   "commit": "3652c93",
+   "commit_resolvable": null
+  },
+  "T08": {
+   "status": "INTEGRATED",
+   "title": "实现literal/alias编译与重叠扫描",
+   "commit": "9bc23a6b1158411c47f33cfb503310ab780aa187",
+   "commit_resolvable": true
+  },
+  "T09": {
+   "status": "INTEGRATED",
+   "title": "实现有限间隔及局部例外",
+   "commit": "febd4fb",
+   "commit_resolvable": null
+  },
+  "T10": {
+   "status": "INTEGRATED",
+   "title": "实现受限正则校验与首次见证",
+   "commit": "e82e9c5526ac2cc5b87caa2f88b45514a96a7deb",
+   "commit_resolvable": true
+  },
+  "T11": {
+   "status": "INTEGRATED",
+   "title": "汇总引擎、动作和确定性结果",
+   "commit": "3397ed5",
+   "commit_resolvable": null
+  },
+  "T12": {
+   "status": "INTEGRATED",
+   "title": "实现HTTP数据面与权限边界",
+   "commit": "c523c11",
+   "commit_resolvable": null
+  },
+  "T13": {
+   "status": "INTEGRATED",
+   "title": "实现gRPC数据面与presence",
+   "commit": "7792a0f",
+   "commit_resolvable": null
+  },
+  "T14": {
+   "status": "INTEGRATED",
+   "title": "实现快照发布、CAS与持久恢复",
+   "commit": "95bea3f",
+   "commit_resolvable": null
+  },
+  "T15": {
+   "status": "INTEGRATED",
+   "title": "实现Erlang HTTP/gRPC薄适配器",
+   "commit": "c3de6c6a",
+   "commit_resolvable": null
+  },
+  "T16": {
+   "status": "INTEGRATED",
+   "title": "实现IMBoy一致性导出与指定发布者",
+   "commit": "29840af9",
+   "commit_resolvable": null
+  },
+  "T17": {
+   "status": "INTEGRATED",
+   "title": "实现全局准入、观测和部署骨架",
+   "commit": "dd805e6371787ef9b973c33552e4ee68253f61ad",
+   "commit_resolvable": true
+  },
+  "T18": {
+   "status": "INTEGRATED",
+   "title": "提前测核心与完整请求成本",
+   "commit": "22a73d6",
+   "commit_resolvable": true
+  },
+  "T19": {
+   "status": "INTEGRATED",
+   "title": "完成真实Rust↔Erlang双协议与发布闭环",
+   "commit": "479c49a1b37d6728522cf04bbc04edf6fd185b7a",
+   "commit_resolvable": true
+  },
+  "T20": {
+   "status": "INTEGRATED",
+   "title": "接入真实业务入口与复审元数据",
+   "commit": "20effa8290b825ce636eafc42ab5197ed3c32cbd",
+   "commit_resolvable": true
+  },
+  "T21": {
+   "status": "INTEGRATED",
+   "title": "实现模式切换与可比较影子验证",
+   "commit": "8b3dfa0f155747295137ab20a5e8889671581708",
+   "commit_resolvable": true
+  },
+  "T22": {
+   "status": "PASSED_INTEGRATED",
+   "title": "注入发布故障、乱序与重启场景",
+   "commit": "6c58754",
+   "commit_resolvable": true
+  },
+  "T23": {
+   "status": "PASSED_INTEGRATED",
+   "title": "验证故障业务动作、E2EE和隐私",
+   "commit": "84f86e515378690bb1552954745d90a9ac2af91f",
+   "commit_resolvable": null
+  },
+  "T24": {
+   "status": "COMPLETED_PARTIAL_ENV_BLOCKED",
+   "title": "执行独占容量、过载与持续运行验收"
+  },
+  "T25": {
+   "status": "PASSED_WITH_DECLARED_LIMITS",
+   "title": "审核业务语料与增强规则启用条件"
+  },
+  "T26": {
+   "status": "PENDING",
+   "title": "独立审查与定向回归收口"
+  },
+  "T27": {
+   "status": "PENDING",
+   "title": "冻结候选并执行最终门禁"
+  },
+  "T28": {
+   "status": "PASSED",
+   "title": "演练干净安装、程序及规则回滚"
+  },
+  "T29": {
+   "status": "NOT_AUTHORIZED",
+   "title": "经授权执行生产影子与灰度"
+  },
+  "U00": {
+   "status": "PASSED",
+   "title": "核查目标项目贡献边界"
+  },
+  "U01": {
+   "status": "COMPLETED_NO_CANDIDATE",
+   "title": "归因与最小复现"
+  },
+  "U02": {
+   "status": "NOT_APPLICABLE",
+   "title": "准备隔离的最小通用补丁"
+  },
+  "U03": {
+   "status": "NOT_APPLICABLE",
+   "title": "独立验证通用性与兼容性"
+  },
+  "U04": {
+   "status": "NOT_APPLICABLE",
+   "title": "整理本地审阅包"
+  },
+  "U05": {
+   "status": "NOT_AUTHORIZED",
+   "title": "经明确授权投稿及跟踪"
+  }
+ },
+ "gates": {
+  "G0": {
+   "status": "PASS",
+   "basis": null
+  },
+  "G1": {
+   "status": "PASS",
+   "basis": "T04-T11 all integrated; independent oracle differential AC-013 passed at T08; engine never wired to business before G2"
+  },
+  "G2": {
+   "status": "PASS",
+   "basis": null
+  },
+  "G3": {
+   "status": "PASS",
+   "basis": "T14 publication state machine + T16 source-of-truth reconciliation + T22 fault injection (AC-067..071) all green on integrated candidate"
+  },
+  "G4": {
+   "status": "PASS",
+   "basis": "T20/T21 (W5) + T23 final verification: permissions, E2EE zero-call, error table rows, create/edit side effects all green on fbd0bbe"
+  },
+  "G5": {
+   "status": "PARTIAL_ENV_BLOCKED",
+   "basis": "AC-091 PASS, AC-096 PASS, AC-092 http/mixed PASS with grpc env-exception, AC-093/094 partial (burst-blocked), AC-095 mechanism+fix verified with residual RSS growth documented; host contention from user's imboy_local prevents the remaining zero-tolerance windows"
+  },
+  "G6": {
+   "status": "PASS_WITH_DECLARED_LIMITS",
+   "basis": "T25 restricted local branch: synthetic+transparency+enforceable activation list done; business corpus DATA_UNAVAILABLE declared; content_acceptance_scope=restricted_local"
+  },
+  "G7": {
+   "status": "PASS",
+   "basis": "T28 drills all green on the fixed candidate image e328a097"
+  },
+  "G8": {
+   "status": "NOT_RUN",
+   "basis": null
+  },
+  "G9": {
+   "status": "NOT_AUTHORIZED",
+   "basis": null
+  }
+ },
+ "upstream": {},
+ "separated_statuses": {
+  "product_status": "PARTIAL_LOCAL_INTEGRATED",
+  "production_status": "NOT_AUTHORIZED",
+  "publication_status": "NOT_AUTHORIZED",
+  "upstream_status": "NO_UPSTREAM_CHANGE_NEEDED_PENDING_T26_CONFIRMATION",
+  "upstream_gates": {
+   "UG0": {
+    "status": "NOT_RUN"
+   },
+   "UG1": {
+    "status": "NOT_RUN"
+   },
+   "UG2": {
+    "status": "NOT_RUN"
+   },
+   "UG3": {
+    "status": "NOT_AUTHORIZED"
+   }
+  },
+  "upstream_tasks": {
+   "U00": "PASSED",
+   "U01": "COMPLETED_NO_CANDIDATE",
+   "U02": "NOT_APPLICABLE",
+   "U03": "NOT_APPLICABLE",
+   "U04": "NOT_APPLICABLE",
+   "U05": "NOT_AUTHORIZED"
+  },
+  "content_acceptance_scope": "restricted_local",
+  "activation_limits": {
+   "business_corpus_authorized": false,
+   "new_block_rules": "review_or_shadow_until_business_approval"
+  }
+ },
+ "summary": {
+  "gaps": [],
+  "gap_count": 0,
+  "acceptance_status_counts": {
+   "PASS": 103,
+   "PASS_WITH_ENV_EXCEPTION": 1,
+   "PARTIAL": 2,
+   "PARTIAL_DEFECT_FIXED": 1,
+   "PASS_WITH_DECLARED_LIMITS": 2,
+   "NOT_RUN": 9,
+   "NOT_AUTHORIZED": 2
+  },
+  "closed": true
+ }
+}

@@ -1,0 +1,95 @@
+{
+ "generated_at": "2026-10-20T05:36:50+0800",
+ "plan": {
+  "version": "V2.1",
+  "sha256": "607fd1f8479579e570e411c1c4c8e1f5ebbe652730a408604b9cfcf8373ed201"
+ },
+ "run_id": "run-20261016T075111Z",
+ "dependency_mode": "registry_locked",
+ "cargo_lock_sha256": "5e07482a89626c1cbdd8c13143d96d385d8da66da416b8ba00c1fa71aef33247",
+ "aho_corasick": {
+  "version": "1.1.3 (pinned =1.1.3 on the integration candidate; main carries user-requested =1.1.5 bump at 429293e, tests green, capacity evidence not bound to it)",
+  "source": "registry (crates.io), no path/git overrides",
+  "fork_source_head": "6c0abf5681bfc30bb9d8f7f52b68a350b436fffa",
+  "patched": false
+ },
+ "candidates": {
+  "imboy-textguard": {
+   "branch": "textguard/run-20261016T075111Z/integration",
+   "head": "49dfe3f3400f370f178870e02386e7f14a1800bf",
+   "tree": "fc473939852ffd44aaaec34ce1e6ef3bb9c1ad62",
+   "checkout": "main repo (main tip carries user-requested =1.1.5 bump 429293e; evidence binds this integration branch)",
+   "worktree_status": false
+  },
+  "imboy": {
+   "branch": "textguard/run-20261016T075111Z/imboy-integration",
+   "head": "a2fe60cd3d1883ed4392969485c151a7861b4937",
+   "tree": "e67c92dd405a2cc80127132e41d98f5fdb280b0d",
+   "checkout": "main repo (worktrees removed 2026-10-19 by user-authorized cleanup)",
+   "worktree_status": true
+  },
+  "imboyapp": {
+   "unchanged_verified": true,
+   "validated_head": "2215ef2dea66b88ea7ea4e91ff2fc68126f03238",
+   "note": "post-freeze UI drift audited, moderation contracts unchanged"
+  },
+  "imboyadmin": {
+   "unchanged_verified": true,
+   "validated_head": "a2160f4625771027e70835e1a2c4e7bbab530cfa"
+  }
+ },
+ "source_heads_at_validation": {
+  "aho-corasick": "6c0abf5681bfc30bb9d8f7f52b68a350b436fffa",
+  "imboy-textguard": "81f674fe0ef8a712036f06b7b59102db198caedf",
+  "imboy": "80366bfd8e5bd8124f47e7da513090d51af40b1f",
+  "imboyapp": "2215ef2dea66b88ea7ea4e91ff2fc68126f03238",
+  "imboyadmin": "a2160f4625771027e70835e1a2c4e7bbab530cfa"
+ },
+ "t24_image": {
+  "id": "sha256:e328a097cad142b4ea81a5bed72b2d93bc1455ba7e07ac9da5eeb3f132349688",
+  "built_from": "textguard-perf:t24fix-01 — final T24 image (formal05-07, soak09-fixed, all 2026-10-19 quiet-window reruns)",
+  "toolchain": "project-local Linux toolchain volume tg-run-20261016t075111z-toolchain (rust pinned by rust-toolchain.toml)"
+ },
+ "gates": {
+  "G0": "PASS",
+  "G1": "PASS",
+  "G2": "PASS",
+  "G3": "PASS",
+  "G4": "PASS",
+  "G5": "PASS_WITH_DECLARED_SOAK_RESIDUAL",
+  "G6": "PASS_WITH_DECLARED_LIMITS",
+  "G7": "PASS",
+  "G8": "PASS_WITH_DECLARED_RESIDUALS",
+  "G9": "NOT_AUTHORIZED"
+ },
+ "content_acceptance_scope": "restricted_local",
+ "activation_limits": {
+  "business_corpus_authorized": false,
+  "new_block_rules": "review_or_shadow_until_business_approval"
+ },
+ "separated": {
+  "production": "NOT_AUTHORIZED (T29/G9)",
+  "publication_upstream": "NOT_AUTHORIZED (U05/UG3)",
+  "upstream_status": "NO_UPSTREAM_CHANGE_NEEDED (confirmed at T26: no generic aho-corasick defect; product consumes official 1.1.3 unpatched)",
+  "push_main_merge": "none performed"
+ },
+ "environment_caveats": [
+  {
+   "gate": "G5",
+   "issue": "host contention historically blocked zero-unexpected windows (imboy_local 60-170% bursts); contention source dead on the evening of 2026-10-19",
+   "evidence": "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T24-contention-monitor/timeline3.jsonl",
+   "resolution": "quiet-window rerun3 2026-10-19: ac092 ok (cap-B1-grpc 0-fail p99 3.9ms, historic 3x contention point green); ac093 ladder 750/1000/1500 unexpected=0 (1500 single HTTP_429 bounded rejection); ac094-clean five shapes unexpected=0",
+   "declared_residual": "AC-095 soak rss_growth_bound FAIL_MITIGATED: allocator high-water +3.3MB/pub documented with A/B fix evidence 932->222MB (plan 16.4 path); not contention-bound, rerun does not change its classification"
+  }
+ ],
+ "e2e_full_eunit": {
+  "attempt": "attempt4",
+  "date": "2026-10-19",
+  "chunks": 24,
+  "passes": 2,
+  "evidence_binding_head": "f3ca4fbf16c01094ab126e8ed3b34597e16e6582",
+  "textguard_suites": "9/9 green",
+  "residual_failures": "all non-TextGuard, classified: 22 native-runner gate designed GitHub-runner-only (not reproducible locally by design) + 4 pre-existing behaviour singles + few cancels; plan 15.5 keeps overall status below LOCAL_CANDIDATE_PASS while these remain",
+  "evidence": "/Users/leeyi/imboy-evidence/textguard-v2/runs/run-20261016T075111Z/T27-eunit-attempt4"
+ }
+}

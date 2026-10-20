@@ -1,0 +1,16 @@
+{
+ "total": 1436,
+ "chunks": 24,
+ "chunk_size": 60,
+ "excl": [
+  "agent_grant_pg",
+  "agent_grant_pg_tests",
+  "agent_recovery_pg_tests",
+  "agent_run_pg",
+  "agent_run_pg_tests",
+  "agent_tool_authorizer_pg_tests",
+  "cs_pg_widget",
+  "cs_seat_console_pg_tests",
+  "elib_tsid"
+ ]
+}
