@@ -43,9 +43,9 @@ chown imboy-tg:imboy-tg /etc/imboy-textguard/check /etc/imboy-textguard/publish
 TEXTGUARD_DATA_DIR=/var/lib/imboy-textguard/data
 TEXTGUARD_CHECK_SECRET_FILE=/etc/imboy-textguard/check
 TEXTGUARD_PUBLISH_SECRET_FILE=/etc/imboy-textguard/publish
-TEXTGUARD_HTTP_ADDR=127.0.0.1:8081
-TEXTGUARD_GRPC_ADDR=127.0.0.1:8082
-TEXTGUARD_MANAGE_ADDR=127.0.0.1:8083
+TEXTGUARD_HTTP_ADDR=127.0.0.1:8181
+TEXTGUARD_GRPC_ADDR=127.0.0.1:8182
+TEXTGUARD_MANAGE_ADDR=127.0.0.1:8183
 TEXTGUARD_T2S_TABLE_ID=opencc-1.1.9-single-v1
 ```
 
@@ -89,7 +89,7 @@ rm /tmp/imboy-textguard
 chown imboy-tg:imboy-tg /etc/imboy-textguard/check /etc/imboy-textguard/publish   # 关键！
 systemctl enable --now imboy-textguard
 systemctl is-active imboy-textguard        # 期望 active
-curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8081/health/live   # 期望 200
+curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8181/health/live   # 期望 200
 ```
 
 > ⚠️ 新手最常踩的坑：secret 文件必须 `chown imboy-tg`。忘了的话服务会一直重启，
@@ -102,12 +102,12 @@ cat > /etc/imboy-textguard/starter-ruleset.json <<'JSON'
 {"schema_version":1,"normalization_id":"imboy-base-v1","t2s_table_id":"opencc-1.1.9-single-v1","limit_profile_id":"mvp-default-v1","semantics_by_scene":{"channel_message":"enhanced-v1","moment_post":"enhanced-v1","profile_field":"compat-v1"},"allow_empty":true,"literals":[],"regex_rules":[],"exceptions":[]}
 JSON
 PUB=$(cat /etc/imboy-textguard/publish)
-ETAG=$(curl -s -H "authorization: Bearer $PUB" http://127.0.0.1:8083/internal/v1/rulesets/active | python3 -c "import sys,json;print(json.load(sys.stdin)['state_etag'])")
-curl -s -X PUT http://127.0.0.1:8083/internal/v1/rulesets/active \
+ETAG=$(curl -s -H "authorization: Bearer $PUB" http://127.0.0.1:8183/internal/v1/rulesets/active | python3 -c "import sys,json;print(json.load(sys.stdin)['state_etag'])")
+curl -s -X PUT http://127.0.0.1:8183/internal/v1/rulesets/active \
   -H "authorization: Bearer $PUB" -H "If-Match: $ETAG" \
   -H "x-textguard-confirm-empty: true" -H 'content-type: application/json' \
   --data-binary @/etc/imboy-textguard/starter-ruleset.json
-curl -s -o /dev/null -w "ready:%{http_code}\n" http://127.0.0.1:8081/health/ready   # 期望 200
+curl -s -o /dev/null -w "ready:%{http_code}\n" http://127.0.0.1:8181/health/ready   # 期望 200
 ```
 
 > ⚠️ 空规则包必须带 `x-textguard-confirm-empty: true` 头（防误发布全放行词库的保险），
@@ -125,7 +125,7 @@ curl -s -o /dev/null -w "ready:%{http_code}\n" http://127.0.0.1:8081/health/read
 ## 6. 让 IMBoy 后端使用它（业务切流，单独操作）
 
 后端（Erlang，宿主机裸进程）默认 `mode=legacy`，不经过 TextGuard——部署完成后业务
-零影响。切流需改后端配置 `moderation_detector`（transport http，`127.0.0.1:8081`，
+零影响。切流需改后端配置 `moderation_detector`（transport http，`127.0.0.1:8181`，
 CHECK 凭证）并在 shadow 模式观察后再切，参考仓库 `priv/textguard/transport.example.config`。
 **新增 block 规则必须先取得业务批准**（当前为受限本地姿态）。
 

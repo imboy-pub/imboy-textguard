@@ -25,15 +25,15 @@ chmod 600 $SEC/check $SEC/publish
 TEXTGUARD_T2S_TABLE_ID=opencc-1.1.9-single-v1 \
 TEXTGUARD_DATA_DIR=$SEC/rules TEXTGUARD_CHECK_SECRET_FILE=$SEC/check \
 TEXTGUARD_PUBLISH_SECRET_FILE=$SEC/publish ./target/release/imboy-textguard
-# 端口：HTTP 8081 / gRPC 8082 / 管理 8083（均 loopback）
+# 端口：HTTP 8181 / gRPC 8182 / 管理 8183（均 loopback）
 ```
-启动即验：`curl -s -o /dev/null -w %{http_code} http://127.0.0.1:8081/health/live` → 200；`/health/ready` 未发布时 503。
+启动即验：`curl -s -o /dev/null -w %{http_code} http://127.0.0.1:8181/health/live` → 200；`/health/ready` 未发布时 503。
 
 ## 3. 发布规则包（CAS）
 ```bash
 PUB=$(cat $SEC/publish)
-ETAG=$(curl -s -H "authorization: Bearer $PUB" http://127.0.0.1:8083/internal/v1/rulesets/active | python3 -c "import sys,json;print(json.load(sys.stdin)['state_etag'])")
-curl -s -X PUT http://127.0.0.1:8083/internal/v1/rulesets/active \
+ETAG=$(curl -s -H "authorization: Bearer $PUB" http://127.0.0.1:8183/internal/v1/rulesets/active | python3 -c "import sys,json;print(json.load(sys.stdin)['state_etag'])")
+curl -s -X PUT http://127.0.0.1:8183/internal/v1/rulesets/active \
   -H "authorization: Bearer $PUB" -H "If-Match: $ETAG" -H 'content-type: application/json' \
   --data-binary @<规则包>.json     # t2s_table_id 必须与启动表一致，否则 UNSUPPORTED_RULESET
 ```
@@ -42,7 +42,7 @@ curl -s -X PUT http://127.0.0.1:8083/internal/v1/rulesets/active \
 ## 4. 检测
 ```bash
 CHK=$(cat $SEC/check)
-curl -s -X POST http://127.0.0.1:8081/v1/check -H "authorization: Bearer $CHK" \
+curl -s -X POST http://127.0.0.1:8181/v1/check -H "authorization: Bearer $CHK" \
   -H 'content-type: application/json' \
   -d '{"request_id":"demo-1","scene":"channel_message","fields":[{"field_id":"f1","text":"…"}]}'
 # 未认证 → 401；坏体 → 400；未发布 → 503 NOT_READY（绝不 allow）
