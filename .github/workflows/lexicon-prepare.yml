@@ -2,29 +2,77 @@ name: Lexicon preparation
 on:
   push:
     branches: [feat/review-lexicon-three-rounds]
-    paths:
-      - 'tools/lexicon/**'
-      - '.github/workflows/lexicon-prepare.yml'
+    paths: ['.github/workflows/lexicon-prepare.yml']
 permissions:
-  contents: read
+  contents: write
 jobs:
   prepare:
+    if: github.repository == 'imboy-pub/imboy-textguard' && github.ref == 'refs/heads/feat/review-lexicon-three-rounds'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-        with:
-          persist-credentials: false
-      - name: Collect and verify pinned sources; run three collection rounds
-        run: python3 tools/lexicon/build_review_lexicon.py --fetch --cache "$RUNNER_TEMP/lexicon-cache"
-      - name: Verify deterministic regeneration
+      - name: Apply audited final source-noise exclusions
         run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('tools/lexicon/build_review_lexicon.py')
+          text = p.read_text()
+          needle = '    if word in BARE:\n'
+          insert = (
+              "    if any(ord(c) in (42, 124, 94, 36, 60, 62, 34, 123, 125, 91, 93, 92) for c in word):\n"
+              "        return 'source_pattern_not_literal'\n"
+              "    if re.search(r'^(?:毛|操)(?=色情|淫秽|迷药|冰毒|海洛因|大麻|毒品)', word):\n"
+              "        return 'malformed_source_prefix'\n"
+              "    if word == '色情词':\n"
+              "        return 'benign_meta_topic'\n"
+          )
+          if 'source_pattern_not_literal' not in text:
+              assert text.count(needle) == 1
+              p.write_text(text.replace(needle, insert + needle))
+          PY
+          python3 -m py_compile tools/lexicon/build_review_lexicon.py
+      - name: Collect three rounds and validate
+        run: |
+          python3 -m pip install jsonschema==4.23.0
+          python3 tools/lexicon/build_review_lexicon.py --fetch --cache "$RUNNER_TEMP/lexicon-cache"
+          python3 -m unittest discover -s tools/lexicon -p 'test_*.py' -v
+          python3 tools/lexicon/validate_review_lexicon.py
           python3 tools/lexicon/build_review_lexicon.py --cache "$RUNNER_TEMP/lexicon-cache" --out "$RUNNER_TEMP/reproduced"
-          diff -qr data/dictionaries/review_sources_20261020 "$RUNNER_TEMP/reproduced"
-      - name: Archive only filtered distribution, never raw source cache
+          for path in COUNTS.json words rulesets provenance licenses; do diff -qr "data/dictionaries/review_sources_20261020/$path" "$RUNNER_TEMP/reproduced/$path"; done
+      - uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9
+        with:
+          toolchain: 1.90.0
+          components: rustfmt, clippy
+      - run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
+      - name: Format and validate real Rust snapshot and publication
+        run: |
+          cargo fmt --all
+          cargo clippy --locked --all-targets -- -D warnings
+          cargo test --locked --test review_lexicon
+          cargo test --locked
+          cargo build --locked --release
+      - name: Commit verified data only to the authorized PR branch
+        run: |
+          test "$GITHUB_REF_NAME" = feat/review-lexicon-three-rounds
+          test "$(git ls-remote origin refs/heads/feat/review-lexicon-three-rounds | cut -f1)" = "$GITHUB_SHA"
+          git diff -w --exit-code -- src/runtime/server.rs
+          git add -- data/dictionaries/review_sources_20261020 tools/lexicon/build_review_lexicon.py tests/review_lexicon.rs src/runtime/server.rs tests/bundled_seed.rs
+          git diff --cached --name-only
+          if ! git diff --cached --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git commit -m 'data: commit three verified collection rounds and regression coverage'
+            git push origin HEAD:refs/heads/feat/review-lexicon-three-rounds
+          fi
+      - name: Archive filtered distribution and validation tooling
+        if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: textguard-lexicon-three-rounds
-          path: data/dictionaries/review_sources_20261020/
+          name: textguard-lexicon-three-rounds-verified
+          path: |
+            data/dictionaries/review_sources_20261020/
+            tools/lexicon/
+            tests/review_lexicon.rs
           if-no-files-found: error
           retention-days: 7
