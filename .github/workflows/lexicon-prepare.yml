@@ -1,0 +1,30 @@
+name: Lexicon preparation
+on:
+  push:
+    branches: [feat/review-lexicon-three-rounds]
+    paths:
+      - 'tools/lexicon/**'
+      - '.github/workflows/lexicon-prepare.yml'
+permissions:
+  contents: read
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - name: Collect and verify pinned sources; run three collection rounds
+        run: python3 tools/lexicon/build_review_lexicon.py --fetch --cache "$RUNNER_TEMP/lexicon-cache"
+      - name: Verify deterministic regeneration
+        run: |
+          python3 tools/lexicon/build_review_lexicon.py --cache "$RUNNER_TEMP/lexicon-cache" --out "$RUNNER_TEMP/reproduced"
+          diff -qr data/dictionaries/review_sources_20261020 "$RUNNER_TEMP/reproduced"
+      - name: Archive only filtered distribution, never raw source cache
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: textguard-lexicon-three-rounds
+          path: data/dictionaries/review_sources_20261020/
+          if-no-files-found: error
+          retention-days: 7
