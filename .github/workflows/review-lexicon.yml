@@ -1,0 +1,31 @@
+name: Review lexicon
+on:
+  push:
+    paths: ['data/dictionaries/review_sources_20261020/**', 'tools/lexicon/**', 'schemas/ruleset.schema.json', 'tests/review_lexicon.rs', 'tests/bootstrap_table.rs', 'src/runtime/server.rs', '.github/workflows/review-lexicon.yml']
+  pull_request:
+    paths: ['data/dictionaries/review_sources_20261020/**', 'tools/lexicon/**', 'schemas/ruleset.schema.json', 'tests/review_lexicon.rs', 'tests/bootstrap_table.rs', 'src/runtime/server.rs', '.github/workflows/review-lexicon.yml']
+permissions:
+  contents: read
+jobs:
+  offline-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - run: python3 -m pip install jsonschema==4.23.0
+      - run: python3 -m unittest discover -s tools/lexicon -p 'test_*.py' -v
+      - run: python3 tools/lexicon/validate_review_lexicon.py
+  runtime-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9
+        with:
+          toolchain: 1.90.0
+      - run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
+      - run: cargo test --locked --test bootstrap_table --test review_lexicon
+      - run: cargo test --locked --features fault-injection --test fault_publish --test fault_process

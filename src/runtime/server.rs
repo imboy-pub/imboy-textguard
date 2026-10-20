@@ -341,10 +341,14 @@ pub async fn serve(
         Arc::new(RulesState::load(&config.data_dir, table).map_err(|_| "RULE_STORE_UNAVAILABLE")?);
     // First-run bootstrap only. Never replace an existing ACTIVE ruleset or
     // recover from a corrupt manifest by silently activating the seed.
-    if matches!(rules.status(), crate::rules::StoreStatus::Empty) {
+    if matches!(rules.status(), crate::rules::StoreStatus::Empty)
+        && config.table_id == crate::T2S_TABLE_ID
+    {
         let seed = include_bytes!("../../data/dictionaries/default_review_seed.json");
         let (_, etag) = rules.active_state().map_err(|_| "RULE_STORE_UNAVAILABLE")?;
-        rules.publish(seed, Some(&etag)).map_err(|_| "SEED_BOOTSTRAP_FAILED")?;
+        rules
+            .publish(seed, Some(&etag))
+            .map_err(|_| "SEED_BOOTSTRAP_FAILED")?;
     }
     let core: Arc<dyn CheckCore> = Arc::new(PublishedCore::new(rules.clone()));
     let admission = Admission::default();
