@@ -328,3 +328,11 @@ imboy/pg18:3.6.1-2（两个运行容器在用）、textguard-perf:t24fix-01、te
 - **分支删除**：安全 `-d` 删除 35 个任务分支，0 拒绝（全部确认已合并）；本任务 worktree 已全部不存在（未触碰其他任务线的 .codex-runs worktree）。
 - **测试数据清理**：docker 删 textguard-perf:t24fix-01（122MB）与 textguard-builder-base:1（427MB）；/tmp 清 tg-review-secrets、boot 日志、detach 测试输出、tg16-enh-corrupt.json（损坏注入产物）；用户 PG 中零本任务测试库（eunit 用隔离容器已删）；未动：imboy_pg18 容器与库、其他任务线的 inttest_*/imboy_closeout_* 测试库、pgvector:pg18 镜像（归属存疑留用户定夺）。
 - 未 push（未获授权）。
+
+## 2026-10-20 生产部署执行（T29/G9，用户明确授权）
+
+- 授权：用户明确"授权部署到 prod，二进制模式"。服务器 106.53.76.53:32（pro-imboy，Debian12 x86_64）。
+- 执行：Mac Docker 交叉构建（rust:1.90-bookworm+protoc，TEXTGUARD_BUILD_ID=0.1.0-prod_49dfe3f，二进制 sha256 b622639762b3…）→ scp 校验后安装至 /usr/local/imboy-textguard-0.1.0-prod_49dfe3f/bin → systemd imboy-textguard.service（专用用户 imboy-tg，NoNewPrivileges/ProtectSystem 加固，仅绑 loopback 8081/8082/8083）→ 发布空规则集 generation 1（遵循 x-textguard-confirm-empty 防呆头；部署排错点：secret 属主未改导致 SECRET_FILE_UNREADABLE，chown 后恢复——fail-closed 如设计工作）。
+- 验证：live 200 / ready 200（gen1）/ 检测 allow+complete / 未认证 401 / systemd enabled 开机自启。
+- 边界：Erlang 后端保持 mode=legacy 不切流（业务零影响）；峰值观察与业务切流待后续授权/流程。操作手册见 docs/operations/deploy-binary-prod.md（4b27a43）。
+- 同日用户清理：仓外证据区（17G 原始数据）按用户决定删除，本目录为唯一证明载体。
