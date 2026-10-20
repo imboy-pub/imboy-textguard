@@ -1,5 +1,7 @@
 # 第六轮评审：持久恢复 + gRPC 线缆冒烟收据（2026-10-20，session4）
 
+[中文](R6-recovery-grpc-smoke.md) | [English](R6-recovery-grpc-smoke.en.md)
+
 候选 49dfe3f 真实二进制（macOS，fixture 表，合成词库，临时 secrets 已销毁）。
 
 ## gRPC 线缆级

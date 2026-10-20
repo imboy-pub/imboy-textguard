@@ -1,5 +1,7 @@
 # 第九轮评审：并发准入 + CAS 完整性冒烟（2026-10-20，session4）
 
+[中文](R9-concurrent-cas-smoke.md) | [English](R9-concurrent-cas-smoke.en.md)
+
 候选 49dfe3f 真实二进制（macOS，fixture 表，合成词库，secrets 已销毁）。
 
 ## 并发检测

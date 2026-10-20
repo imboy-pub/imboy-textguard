@@ -1,37 +1,29 @@
-# T08 literal/alias component
+# T08 字面量/别名组件
 
-Run `cargo test --locked --offline --test matcher -- --nocapture` with an isolated
-`CARGO_TARGET_DIR`. Discovery uses the same command with `-- --list`. The driver
-uses the exported library matcher (25 tests). T08 also registers the library
-aggregation and two expansion-budget checks (3 tests), selected with
-`cargo test --locked --lib matcher:: -- --skip matcher::regex::`.
+[中文](README.md) | [English](README.en.md)
 
-The differential test reads the frozen T05 corpus, verifies its manifest SHA256
-and seed 20261016, and compares all 10,000 cases against the actual matcher. It
-projects only literal/alias witnesses out of the frozen expectations. Gap
-witnesses are counted as deferred to T09/T11; they are neither fabricated nor
-marked passed. Regex and final request aggregation belong to T10/T11. The
-`oracle-ruleset.json` file is an exact JSON snapshot of the synthetic data in
-`tests/oracle/rulepool.py`; expected hits never come from production code.
+使用隔离的 `CARGO_TARGET_DIR` 运行 `cargo test --locked --offline --test matcher -- --nocapture`。
+发现（列出）用同一命令加 `-- --list`。驱动器使用导出的库匹配器（25 项测试）。T08 还注册了
+库级聚合与两项扩展预算检查（3 项测试），选择方式为
+`cargo test --locked --lib matcher:: -- --skip matcher::regex::`。
 
-`CompiledLiterals::compile` returns a static, non-content `CompileError::issue`;
-`ErrorCode::from(error)` is the publication adapter. Compat B, enhanced B and
-enhanced T canonical patterns use the corresponding real normalizer. Aliases
-are enhanced B only. A logical canonical contributes three compiled entries,
-an alias one; every metadata entry and its normalized bytes count before
-normalized-text deduplication. Fanout is checked separately per automaton.
+差分测试读取冻结的 T05 语料，校验其 manifest SHA256 与 seed 20261016，并把全部 10,000 个用例
+与真实匹配器逐一比对。它只从冻结期望中投影出字面量/别名见证。gap 见证被计为推迟到 T09/T11；
+既不伪造，也不标记通过。正则与最终请求聚合属于 T10/T11。`oracle-ruleset.json` 是
+`tests/oracle/rulepool.py` 中合成数据的精确 JSON 快照；期望命中永不来自生产代码。
 
-`scan_text(text, scene, enable_t2s, budget, cancel)` is a component convenience
-API. `scan_base` and `scan_t2s` accept provenance units for the T11 pipeline.
-One `CandidateBudget` must span the entire request: every field, B/T/G, metadata
-expansion and exception occurrence. A matched pattern consumes one candidate
-per metadata entry, before scene or boundary filtering; raw and expanded work
-are not charged twice. G/exception consumers must use the same `consume` API.
-At most 20,000 candidates succeed; consuming 20,001 returns an error. Candidate
-budget failures and cancellation observed through the budget remain terminal.
-There is no partial-hit success on an interrupted scan. Request-level response
-sorting, field IDs, metadata enrichment, exception suppression and the final
-100-hit cap remain T11 obligations.
+`CompiledLiterals::compile` 返回静态的、不含内容的 `CompileError::issue`；
+`ErrorCode::from(error)` 是发布适配器。Compat B、enhanced B 与 enhanced T 的 canonical 模式
+使用对应的真实归一化器。别名仅用于 enhanced B。一个逻辑 canonical 贡献三条编译条目，
+一个别名贡献一条；每条元数据条目及其归一化字节在归一化文本去重之前计数。扇出按自动机
+分别检查。
 
-The component tests include the OTP-compatible `ΟΣ -> οσ` behavior and the
-enhanced full-string `ΟΣ -> ος` behavior. They do not alter T06's old vectors.
+`scan_text(text, scene, enable_t2s, budget, cancel)` 是组件便捷 API。`scan_base` 与 `scan_t2s`
+接受供 T11 流水线使用的来源单元。同一个 `CandidateBudget` 必须贯穿整个请求：每个字段、
+B/T/G、元数据扩展与例外出现。已匹配的模式按每条元数据条目消耗一个候选，且发生在场景或
+边界过滤之前；原始工作与扩展工作不重复计费。G/例外消费者必须使用同一 `consume` API。
+最多 20,000 个候选成功；消耗第 20,001 个即返回错误。候选预算失败以及通过预算观察到的
+取消保持终态。被中断的扫描不存在部分命中的成功。请求级响应排序、字段 ID、元数据富化、
+例外抑制与最终 100 命中上限仍属 T11 义务。
+
+组件测试包含 OTP 兼容的 `ΟΣ -> οσ` 行为与增强的整串 `ΟΣ -> ος` 行为。它们不改变 T06 的旧向量。

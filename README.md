@@ -1,5 +1,7 @@
 # IMBoy TextGuard
 
+[中文](README.md) | [English](README.en.md)
+
 独立 Rust 文本检测服务。本地实施候选，尚未完成产品验收。
 
 运行时不依赖相邻 aho-corasick checkout；依赖使用公开 registry 版本及本仓 Cargo.lock。

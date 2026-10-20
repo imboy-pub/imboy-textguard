@@ -1,5 +1,7 @@
 # 第八轮评审：代码卫生审计（2026-10-20，session4）
 
+[中文](R8-code-hygiene-audit.md) | [English](R8-code-hygiene-audit.en.md)
+
 ## Rust 候选（49dfe3f，src/ 生产路径）
 - dbg!：0；println!：仅 main.rs:4（--version 输出，CLI 功能）；eprintln!：仅 panic 钩子 INTERNAL_ERROR 与三处启动失败 NOT_READY（刻意失败可观测性）
 - TODO/FIXME/HACK/XXX/DIAG：0

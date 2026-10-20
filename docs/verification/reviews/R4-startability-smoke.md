@@ -1,5 +1,7 @@
 # 第四轮评审运行时冒烟收据（2026-10-20 ~06:30，session4）
 
+[中文](R4-startability-smoke.md) | [English](R4-startability-smoke.en.md)
+
 候选：imboy-textguard integration@49dfe3f（aho-corasick =1.1.3 registry），macOS 开发机（仅启动性验证，非容量口径）。
 
 - 构建：`cargo build --locked --release` 21.2s 通过；`cargo test --locked --test contract` 7 passed / 0 failed。

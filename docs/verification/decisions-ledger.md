@@ -1,5 +1,7 @@
 # 执行决定
 
+[中文](decisions-ledger.md) | [English](decisions-ledger.en.md)
+
 D001 控制目录映射：用户提示词 CONTROL_ROOT 指向已存在的计划文件，不能把文件当目录或搬移覆盖。匹配原始摘要后采用计划第 1.3/22.1 节固定目录 /Users/leeyi/imboy-evidence/textguard-v2；保留原计划及只读副本，后续同提示词从该稳定目录恢复。该调整属于已授权实际目录映射，不变更 T/AC 义务。
 
 D002 未找到 mem 可执行命令；不臆造 /mem load，不修改本地 memory。当前任务不依赖历史聊天。

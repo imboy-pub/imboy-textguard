@@ -1,4 +1,6 @@
 # TextGuard 交付操作手册（整合版，2026-10-20）
+
+[中文](runbook.md) | [English](runbook.en.md)
 来源：R4-R9 冒烟实测命令整合；所有命令均已实际执行验证。无任何 secret。
 
 ## 0. 候选

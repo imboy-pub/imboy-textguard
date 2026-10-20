@@ -1,5 +1,7 @@
 # 第七轮评审：imboy 产品侧 TextGuard 漂移审计（2026-10-20，session4）
 
+[中文](R7-imboy-drift-audit.md) | [English](R7-imboy-drift-audit.en.md)
+
 范围：f3ca4fbf（attempt4 EUnit 证据绑定头）→ a2fe60cd（imboy 集成候选头）。
 
 ## 事实

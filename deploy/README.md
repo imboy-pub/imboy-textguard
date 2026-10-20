@@ -1,5 +1,7 @@
 # 本地 Linux 容器候选
 
+[中文](README.md) | [English](README.en.md)
+
 本目录是部署骨架；本次没有生产部署授权。服务只接受 loopback 明文监听。
 Linux 容器使用 host network；跨主机检测必须经同一 Linux 主机上的 TLS gateway，
 客户端验证受信 CA、主机名和证书有效期。`nginx-tls.conf` 是独立 gateway 样例，

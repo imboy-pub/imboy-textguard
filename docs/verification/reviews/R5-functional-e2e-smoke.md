@@ -1,5 +1,7 @@
 # 第五轮评审功能闭环冒烟收据（2026-10-20，session4）
 
+[中文](R5-functional-e2e-smoke.md) | [English](R5-functional-e2e-smoke.en.md)
+
 候选 49dfe3f 真实二进制（macOS，fixture 表 test-t2s-v1，合成词库，临时 secrets 已销毁）。
 
 ## 发布闭环

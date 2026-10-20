@@ -1,5 +1,7 @@
 # TextGuard 二进制模式生产部署（新手向）
 
+[中文](deploy-binary-prod.md) | [English](deploy-binary-prod.en.md)
+
 > 目标：在一台 Linux（Debian 12，x86_64）服务器上以**裸二进制 + systemd** 方式部署
 > TextGuard，约 30 分钟完成。全程不需要在服务器上装 Docker。
 
