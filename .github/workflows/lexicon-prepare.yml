@@ -47,11 +47,29 @@ jobs:
           toolchain: 1.90.0
           components: rustfmt, clippy
       - run: sudo apt-get update && sudo apt-get install -y protobuf-compiler
+      - name: Reproduce PR 1 alternate-table regression without weakening its assertion
+        run: |
+          if cargo test --locked --test bootstrap_table > lexicon-validation-evidence/bootstrap-before.log 2>&1; then
+            echo 'Expected regression was not reproduced'; exit 1
+          fi
+          grep 'startup exited for supported table test-t2s-v1' lexicon-validation-evidence/bootstrap-before.log
+      - name: Preserve default bootstrap and fail closed for alternate tables
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('src/runtime/server.rs')
+          text = p.read_text()
+          old = 'if matches!(rules.status(), crate::rules::StoreStatus::Empty) {'
+          new = 'if matches!(rules.status(), crate::rules::StoreStatus::Empty) && config.table_id == crate::T2S_TABLE_ID {'
+          assert text.count(old) == 1
+          p.write_text(text.replace(old, new))
+          PY
       - name: Format and validate real Rust snapshot and publication
         run: |
           set -o pipefail
           cargo fmt --all
           cargo clippy --locked --all-targets -- -D warnings 2>&1 | tee lexicon-validation-evidence/clippy.log
+          cargo test --locked --test bootstrap_table 2>&1 | tee lexicon-validation-evidence/bootstrap-after.log
           cargo test --locked --test review_lexicon 2>&1 | tee lexicon-validation-evidence/lexicon-rust-tests.log
           cargo test --locked 2>&1 | tee lexicon-validation-evidence/full-cargo-tests.log
           cargo build --locked --release 2>&1 | tee lexicon-validation-evidence/release-build.log
@@ -64,15 +82,16 @@ jobs:
           from pathlib import Path
           name = 'src/runtime/server.rs'
           before = subprocess.check_output(['git', 'show', 'HEAD:' + name]).decode()
+          before = before.replace('if matches!(rules.status(), crate::rules::StoreStatus::Empty) {', 'if matches!(rules.status(), crate::rules::StoreStatus::Empty) && config.table_id == crate::T2S_TABLE_ID {')
           after = Path(name).read_text()
-          assert re.sub(r'\s+', '', before) == re.sub(r'\s+', '', after), 'Runtime change beyond rustfmt'
+          assert re.sub(r'\s+', '', before) == re.sub(r'\s+', '', after), 'Unexpected runtime change'
           PY
-          git add -- data/dictionaries/review_sources_20261020 tools/lexicon/build_review_lexicon.py tests/review_lexicon.rs src/runtime/server.rs tests/bundled_seed.rs
+          git add -- data/dictionaries/review_sources_20261020 tools/lexicon/build_review_lexicon.py tests/review_lexicon.rs tests/bootstrap_table.rs src/runtime/server.rs tests/bundled_seed.rs
           git diff --cached --name-only
           if ! git diff --cached --quiet; then
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git commit -m 'data: commit three verified collection rounds and regression coverage'
+            git commit -m 'data: add 8851 source-observed review terms and repair alternate-table bootstrap'
             git push origin HEAD:refs/heads/feat/review-lexicon-three-rounds
           fi
       - name: Archive filtered distribution and validation tooling
@@ -85,6 +104,7 @@ jobs:
             tools/lexicon/
             !tools/lexicon/__pycache__/**
             tests/review_lexicon.rs
+            tests/bootstrap_table.rs
             schemas/ruleset.schema.json
             lexicon-validation-evidence/
           if-no-files-found: error
