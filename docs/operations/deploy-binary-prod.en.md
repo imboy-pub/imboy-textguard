@@ -128,14 +128,129 @@ curl -s -o /dev/null -w "ready:%{http_code}\n" http://127.0.0.1:8181/health/read
 - **Roll back the ruleset**: republish the previous ruleset JSON through the §4 PUT (with the current etag in If-Match).
 - **Upgrade**: repeat §1–§3, place the new version in a new directory, switch ExecStart.
 
-## 6. Make the IMBoy backend use it (traffic switch, a separate operation)
+## 6. Make the IMBoy backend use it (traffic switch)
 
-The backend (Erlang, a bare process on the host) defaults to `mode=legacy` and does not pass
-through TextGuard — after deployment the business is unaffected. Switching traffic requires
-changing the backend's `moderation_detector` configuration (transport http, `127.0.0.1:8181`,
-CHECK credential) and observing in shadow mode before switching; see
-`priv/textguard/transport.example.config` in the repository.
-**New block rules require business approval first** (currently a restricted-local posture).
+> The full manual-verification command set (curl/Python, copy-paste ready) lives in
+> [verify-production.en.md](verify-production.en.md). This section covers how to switch
+> and how to roll back.
+
+### 6.0 What switching means, and who is affected
+
+The backend (Erlang, bare process on the host) decides content moderation via the
+`moderation_detector` config, with three modes:
+
+| Mode | Behavior | When |
+|---|---|---|
+| `legacy` (default) | TextGuard fully bypassed; backend built-in word list | Not switched / rollback |
+| `shadow` | Business behavior identical to legacy; TextGuard double-runs in the background recording diffs | Pre-switch observation |
+| `rust` | Enforced | Target state |
+
+**Scope**: profile fields only — `nickname` / `sign` / `profession` / `school` / `interests`
+(code fact: `?PROFILE_REVIEW_FIELDS` in `imboy/src/logic/user_logic.erl`).
+
+**Verdicts**: `high` hit → save rejected; `medium`/`low` hit → **save succeeds + entry in the
+admin review queue**; TextGuard failure/timeout → fail-open (`failure_policy=availability_compat`).
+The 2026-10 lexicon is all `medium`, so after switching, nickname saves always succeed —
+hits simply land in the review queue.
+
+### 6.1 Pre-flight (30 seconds)
+
+```bash
+curl -s -o /dev/null -w "live:%{http_code} "  http://127.0.0.1:8181/health/live
+curl -s -o /dev/null -w "ready:%{http_code}\n" http://127.0.0.1:8181/health/ready   # both must be 200
+```
+
+### 6.2 The config block (what each key means)
+
+```erlang
+{moderation_detector, [
+    {mode, rust},                          %% legacy | shadow | rust
+    {transport, http},                     %% HTTP adapter
+    {failure_policy, availability_compat}, %% fail-open on detector failure
+    {http_base_url, <<"http://127.0.0.1:8181">>},  %% TextGuard check port
+    {timeout_ms, 150},                     %% per-check deadline (TextGuard internal budget 80ms)
+    {max_response_bytes, 262144},          %% response cap (default 65536; raise with a large ruleset)
+    {token, <<"<CHECK credential>">>}      %% contents of /etc/imboy-textguard/check from §2
+]}
+```
+
+A missing/invalid `token` makes the adapter return `not_ready` (fail-closed config load);
+combined with `availability_compat` this means "allow but log" — never silently blocks business.
+Publish-side keys (`publish_http_base_url`/`publish_token`) are not needed by the backend.
+
+### 6.3 Hot switch (no downtime, shadow → rust)
+
+On the server, locate the running node and cookie first:
+
+```bash
+ss -tlnp | grep ':9800 '                         # note the pid
+tr '\0' ' ' < /proc/<pid>/cmdline | cut -c1-200  # note /usr/local/imboy-<ver>-prod_<sha>
+REL=/usr/local/imboy-1.0.0-alpha.82-prod_70a839f6        # ← replace with the actual dir
+NODE=$(grep '^-name' $REL/releases/*/vm.args | awk '{print $2}')
+COOKIE=$(grep '^-setcookie' $REL/releases/*/vm.args | awk '{print $2}')
+ERL=/usr/local/lib/erlang/bin/erl_call
+```
+
+Step 1 — write the config and enter shadow (observation; zero business change).
+The credential is read server-side only:
+
+```bash
+TOKEN=$(cat /etc/imboy-textguard/check)
+printf 'ok = application:set_env(imboy, moderation_detector, [{mode,shadow},{transport,http},{failure_policy,availability_compat},{http_base_url,<<"http://127.0.0.1:8181">>},{timeout_ms,150},{max_response_bytes,262144},{token,<<"%s">>}]), moderation_shadow:set_mode(shadow).\n' "$TOKEN" \
+  | $ERL -s -name $NODE -c "$COOKIE" -e
+$ERL -s -name $NODE -c "$COOKIE" -a "moderation_shadow status []"   # expect mode => shadow
+```
+
+After observing without anomalies, step 2 — flip to rust:
+
+```bash
+printf 'moderation_shadow:set_mode(rust).\n' | $ERL -s -name $NODE -c "$COOKIE" -e
+$ERL -s -name $NODE -c "$COOKIE" -a "moderation_shadow status []"   # expect mode => rust
+```
+
+`set_mode/1` updates both the running node's application env and ETS — immediate, no restart.
+Verify the verdict with a business-entry probe (expect `{queued, [...]}` for a lexicon word):
+
+```bash
+printf 'W = <<"0", 16#E5,16#94,16#AE, "k", 16#E7,16#B2,16#89, "qq">>, V = moderation_business:inspect_profile(<<"nickname">>, W), io:format("verdict:~p~n", [V]).\n' \
+  | $ERL -s -name $NODE -c "$COOKIE" -fetch_stdout -e
+%% expect verdict:{queued,[...hits with category => <<"drugs">> ...]}
+```
+
+### 6.4 Persist (survive node restarts)
+
+The hot switch lives in memory only; **after a restart the release dir's sys.config wins**.
+Insert the §6.2 block into `$REL/releases/<ver>/sys.config` right after `{imboy, [`,
+then validate the syntax (a broken sys.config breaks the next boot):
+
+```bash
+CFG=$REL/releases/1.0.0-alpha.82/sys.config      # adjust the version
+cp "$CFG" "$CFG.bak.$(date +%Y%m%dT%H%M%S)"      # back up first
+# ...insert the block (read token from /etc/imboy-textguard/check; never hand-copy)...
+erl -noshell -eval "case file:consult(\"$CFG\") of {ok,_} -> io:format(\"PARSE_OK~n\"); E -> io:format(\"FAIL:~p~n\",[E]) end" -s init stop
+```
+
+Blue-green releases do **not** inherit this block automatically — either carry it in the
+deployment config source, or redo §6.3 + §6.4 after each release.
+
+### 6.5 Rollback (three levels, fastest first)
+
+1. **Instant hot rollback**: `printf 'moderation_shadow:set_mode(legacy).\n' | $ERL -s -name $NODE -c "$COOKIE" -e`
+2. **Persistent rollback**: set `mode` to `legacy` in sys.config (or delete the block),
+   re-run the `file:consult` validation; the next restart boots legacy.
+3. **Full decommission**: `systemctl stop imboy-textguard && systemctl disable imboy-textguard`.
+   With backend fail-open the business is unaffected; only detection is lost.
+
+### 6.6 Known pitfalls (hit in practice)
+
+- `erl_call` takes the cookie via **`-c`**, not `-cookie`.
+- `erl_call -a` argument parsing **does not accept binary literals** — calls containing
+  `<<"...">>` must go through `-e` (stdin), **with a trailing newline**.
+- Writing `<<"中文"/utf8>>` in an erl_call probe gets **double-encoded** by the node's latin1
+  parser, producing a false "no hit"; the real App path (Cowboy JSON parsing) is unaffected.
+  Probe with the byte-exact form in §6.3 or the curl in [verify-production.en.md](verify-production.en.md).
+- A `version_incomparable` counter during shadow observation is **expected** (backend built-in
+  word list vs TextGuard lexicon are naturally different versions), not a fault.
 
 ## 7. Common failures
 
@@ -146,3 +261,5 @@ CHECK credential) and observing in shadow mode before switching; see
 | Publish returns 400 INVALID_RULESET | Empty package missing `x-textguard-confirm-empty: true`, or a JSON field/value is invalid |
 | Publish returns 503 UNSUPPORTED_RULESET | The ruleset's `t2s_table_id` / `normalization_id` differs from the service startup values |
 | Publish returns 412 | If-Match is not the current etag; GET the current value again (idempotent 200 for identical content is normal) |
+| After switching, every check allows | TextGuard stopped, or `token`/`http_base_url` wrong → fail-open; check `systemctl is-active imboy-textguard` and the §6.2 config |
+| `status` shows legacy although the hot switch was done | The node restarted without the block in sys.config (hot switch is memory-only); redo §6.3 + §6.4 |
